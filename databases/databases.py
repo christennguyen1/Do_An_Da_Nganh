@@ -3,7 +3,6 @@ import gridfs
 import requests
 import sys
 from Adafruit_IO import MQTTClient
-from constant.constant import *
 import os
 from dotenv import load_dotenv
 
