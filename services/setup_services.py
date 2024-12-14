@@ -1,6 +1,7 @@
 from databases.databases import *
 from datetime import datetime
 from constant.constant import nutnhan
+import pytz
 
 
 def service_setup_temperature(body):
@@ -15,25 +16,29 @@ def service_setup_temperature(body):
             'message': 'User was not registed',
             'data': []
         }, 200
+    
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
 
     data = {
         'email_user': email_user,
         'value': temperature_value,
         'status': status,
-        'timestamp': datetime.now(),
+        'timestamp': vietnam_time,
     }
 
     collection_setup_temperature.insert_one(data)
     
     publish_to_adafruit("va-tem", temperature_value if status == "ON" else 0)
         
+
     return {
         'message': 'Create Relay successful',
         'data': {
             'email_user': email_user,
             'value': temperature_value,
             'status': status,
-            'timestamp': datetime.now(),
+            'timestamp': vietnam_time,
         }
     }, 200
 
@@ -50,12 +55,15 @@ def service_setup_pir(body):
             'message': 'User was not registed',
             'data': []
         }, 200
+    
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
 
     data = {
         'email_user': email_user,
         'value': pir_value,
         'status': status,
-        'timestamp': datetime.now(),
+        'timestamp': vietnam_time,
     }
 
     collection_setup_pir.insert_one(data)
@@ -68,7 +76,7 @@ def service_setup_pir(body):
             'email_user': email_user,
             'value': pir_value,
             'status': status,
-            'timestamp': datetime.now(),
+            'timestamp': vietnam_time,
         }
     }, 200
 
@@ -86,12 +94,15 @@ def service_setup_light(body):
             'message': 'User was not registed',
             'data': []
         }, 200
+    
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
 
     data = {
         'email_user': email_user,
         'value': light_value,
         'status': status,
-        'timestamp': datetime.now(),
+        'timestamp': vietnam_time,
     }
 
     collection_setup_light.insert_one(data)
@@ -104,6 +115,6 @@ def service_setup_light(body):
             'email_user': email_user,
             'value': light_value,
             'status': status,
-            'timestamp': datetime.now(),
+            'timestamp': vietnam_time,
         }
     }, 200
