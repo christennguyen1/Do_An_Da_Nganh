@@ -2,11 +2,11 @@ from authenticate.jwt_handler import verify_jwt_token
 from services.sensors_services import service_get_all_data
 from fastapi.responses import JSONResponse
 
-def controller_get_data(user: str, token: str):
+def controller_get_data(user: str):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
-        payload = verify_jwt_token(token)
+        # payload = verify_jwt_token(token)
         data, status = service_get_all_data(user)
         response = {
             "message": data.get('message'),

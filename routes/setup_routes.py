@@ -4,24 +4,45 @@ from fastapi.security import OAuth2PasswordBearer
 
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+
+
+# @router.post("/temperature")
+# async def create_setup_temperature(request: Request, token: str = Depends(oauth2_scheme)):
+#     body = await request.json()
+#     return controller_setup_temperature(body, token)
+
+
+
+# @router.post("/pir")
+# async def create_setup_pir(request: Request, token: str = Depends(oauth2_scheme)):
+#     body = await request.json()
+#     return controller_setup_pir(body, token)
+
+
+
+# @router.post("/light")
+# async def create_setup_light(request: Request, token: str = Depends(oauth2_scheme)):
+#     body = await request.json()
+#     return controller_setup_light(body, token)
+
 
 
 @router.post("/temperature")
-async def create_setup_temperature(request: Request, token: str = Depends(oauth2_scheme)):
+async def create_setup_temperature(request: Request):
     body = await request.json()
-    return controller_setup_temperature(body, token)
+    return controller_setup_temperature(body)
 
 
 
 @router.post("/pir")
-async def create_setup_pir(request: Request, token: str = Depends(oauth2_scheme)):
+async def create_setup_pir(request: Request):
     body = await request.json()
-    return controller_setup_pir(body, token)
+    return controller_setup_pir(body)
 
 
 
 @router.post("/light")
-async def create_setup_light(request: Request, token: str = Depends(oauth2_scheme)):
+async def create_setup_light(request: Request):
     body = await request.json()
-    return controller_setup_light(body, token)
+    return controller_setup_light(body)

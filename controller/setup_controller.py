@@ -3,11 +3,11 @@ from services.setup_services import service_setup_temperature, service_setup_pir
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-def controller_setup_temperature(body, token: str):
+def controller_setup_temperature(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
-        payload = verify_jwt_token(token)
+        # payload = verify_jwt_token(token)
         data, status = service_setup_temperature(body)
         response = {
             "message": data.get('message'),
@@ -24,11 +24,11 @@ def controller_setup_temperature(body, token: str):
         }, 500
 
 
-def controller_setup_pir(body, token: str):
+def controller_setup_pir(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
-        payload = verify_jwt_token(token)
+        # payload = verify_jwt_token(token)
         data, status = service_setup_pir(body)
         response = {
             "message": data.get('message'),
@@ -46,11 +46,11 @@ def controller_setup_pir(body, token: str):
     
 
 
-def controller_setup_light(body, token: str):
+def controller_setup_light(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
-        payload = verify_jwt_token(token)
+        # payload = verify_jwt_token(token)
         data, status = service_setup_light(body)
         response = {
             "message": data.get('message'),

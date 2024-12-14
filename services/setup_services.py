@@ -99,7 +99,7 @@ def service_setup_light(body):
     publish_to_adafruit("va-lux", light_value if status == "ON" else 0)
         
     return {
-        'message': 'Create Relay successful',
+        'message': 'Create Set up light successful',
         'data': {
             'email_user': email_user,
             'value': light_value,
