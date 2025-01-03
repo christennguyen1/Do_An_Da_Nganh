@@ -1,6 +1,7 @@
 from databases.databases import *
 from datetime import datetime
 from constant.constant import nutnhan
+import pytz
 
 
 def service_update_relay(body):
@@ -16,26 +17,29 @@ def service_update_relay(body):
                 'errCode': 1
             }, 400
     
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
+    
     data = {
         'email_user': email_user,
         'relayName': relay_name,
         'status': status_relay,
-        'timestamp': datetime.now()
+        'timestamp': vietnam_time
     }
 
     relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
 
-    relay_status_delete = relay.get('isDeleted', 'Unknown')
+    # relay_status_delete = relay.get('isDeleted', 'Unknown')
 
-    if ((not relay) or (relay_status_delete == True)):
-        return {
-                'message': 'Relay not in system', 
-                'errCode': 1
-            }, 400
+    # if ((not relay) or (relay_status_delete == True)):
+    #     return {
+    #             'message': 'Relay not in system', 
+    #             'errCode': 1
+    #         }, 400
     query = {"relayName": relay_name, 'email_user': email_user}
     new_values = {
         "$set": {
-            "status": status_relay, "timestamp": datetime.now()
+            "status": status_relay, "timestamp": vietnam_time
             }
         }
     
@@ -47,7 +51,7 @@ def service_update_relay(body):
             'email_user': email_user,
             'relayName': relay_name,
             'status': status_relay,
-            'timestamp': datetime.now()
+            'timestamp': vietnam_time
         }
     }, 200
 
@@ -70,11 +74,14 @@ def service_create_relay(body):
                 'message': 'Relay not in server', 'errCode': 1
             }, 400
     
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
+    
     data = {
         'email_user': email_user,
         'relayName': relay_name,
         'status': status_relay,
-        'timestamp': datetime.now(),
+        'timestamp': vietnam_time,
         'isDeleted': False
     }
 
@@ -91,7 +98,7 @@ def service_create_relay(body):
             query = {"relayName": relay_name, 'email_user': email_user}
             new_values = {
                 "$set": {
-                    'status': status_relay, "isDeleted": False, "timestamp": datetime.now()
+                    'status': status_relay, "isDeleted": False, "timestamp": vietnam_time
                     }
                 }
             
@@ -113,6 +120,6 @@ def service_create_relay(body):
             'email_user': email_user,
             'relayName': relay_name,
             'status': status_relay,
-            'timestamp': datetime.now()
+            'timestamp': vietnam_time
         }
     }, 200
