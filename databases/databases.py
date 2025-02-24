@@ -33,6 +33,7 @@ collection_relay = db["relay"]
 collection_setup_temperature = db["setup_temperature"]
 collection_setup_pir = db["setup_pir"]
 collection_setup_light = db["setup_light"]
+collection_notification = db["notification"]
 
 #Adafruit
 ADA_USERNAME = os.getenv("AIO_USERNAME_ADAFRUIT")

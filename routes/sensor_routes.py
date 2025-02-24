@@ -15,3 +15,4 @@ router = APIRouter()
 @router.get("/all/{user}")
 async def get_sensor_data(user: str):
     return controller_get_data(user)
+

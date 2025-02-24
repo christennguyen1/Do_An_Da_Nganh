@@ -2,3 +2,7 @@ myenv/
 __pycache__
 test.http
 config/
+Dockerfile
+.dockerignore
+compose.yml
+backend-ktmt.pem

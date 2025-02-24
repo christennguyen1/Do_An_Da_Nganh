@@ -4,8 +4,7 @@ from controller.auth_controller import controller_signin
 from controller.user_controller import controller_signup, controller_updatePassword, controller_updateInfo
 from fastapi.security import OAuth2PasswordBearer
 import asyncio
-from services.auth_service import refresh_user_token
-from authenticate.jwt_handler import verify_jwt_token
+from authenticate.jwt_handler import verify_jwt_token, refresh_access_token
 
 
 router = APIRouter()
@@ -38,7 +37,7 @@ async def updateInfo_route(request: Request):
 
 @router.post("/refresh-token")
 def refresh_token(token: str = Depends(oauth2_scheme)):
-    return refresh_user_token(token)
+    return refresh_access_token(token)
 
 
 @router.get("/get-message")

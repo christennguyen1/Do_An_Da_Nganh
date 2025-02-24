@@ -4,30 +4,19 @@ from fastapi.security import OAuth2PasswordBearer
 
 
 router = APIRouter()
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
-
-
-# @router.post("/update")
-# async def update_relay_data(request: Request, token: str = Depends(oauth2_scheme)):
-#     body = await request.json()
-#     return controller_update_relay(body, token)
-
-
-
-# @router.post("/create")
-# async def update_relay_data(request: Request, token: str = Depends(oauth2_scheme)):
-#     body = await request.json()
-#     return controller_create_relay(body, token)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
 
 @router.post("/update")
-async def update_relay_data(request: Request):
+async def update_relay_data(request: Request, token: str = Depends(oauth2_scheme)):
     body = await request.json()
-    return controller_update_relay(body)
+    return controller_update_relay(body, token)
 
 
 
 @router.post("/create")
-async def update_relay_data(request: Request):
+async def update_relay_data(request: Request, token: str = Depends(oauth2_scheme)):
     body = await request.json()
-    return controller_create_relay(body)
+    return controller_create_relay(body, token)
+
+

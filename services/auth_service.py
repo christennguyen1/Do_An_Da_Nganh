@@ -20,14 +20,14 @@ def authenticate_user(username: str, password: str):
         return True
     return False
 
-def refresh_user_token(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+# def refresh_user_token(token: str):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
+#         username: str = payload.get("sub")
+#         if username is None:
+#             raise HTTPException(status_code=401, detail="Invalid token")
 
-        new_token = create_jwt_token({"sub": username})
-        return {"token": new_token, "token_type": "Bearer"}
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+#         new_token = create_jwt_token({"sub": username})
+#         return {"token": new_token, "token_type": "Bearer"}
+#     except PyJWTError:
+#         raise HTTPException(status_code=401, detail="Invalid token")
