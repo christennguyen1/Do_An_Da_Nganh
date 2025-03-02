@@ -21,14 +21,20 @@ if not all([AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION]):
 
 app = FastAPI()
 
-# Enable CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["https://your-frontend.com"],  # Chỉ định domain cụ thể
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",  # React
+        "http://localhost:8080",  # Vue.js
+        "http://localhost:4200",  # Angular
+        "http://127.0.0.1:3000",  # Thêm các phiên bản 127.0.0.1 nếu cần
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:4200"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ses_client = boto3.client(
     'ses',
