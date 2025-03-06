@@ -3,6 +3,7 @@ from datetime import datetime
 from fastapi import Request
 from werkzeug.security import check_password_hash, generate_password_hash
 import asyncio
+import json
 
 
 def service_user_login(body):
@@ -34,17 +35,21 @@ def service_user_login(body):
         return {
                 'message': 'Wrong username or password', 'errCode': 1
             }, 401
+    # user['_id'] = str(user['_id'])
+    user["_id"] = str(user["_id"])
+    print(user["_id"])
+    user["_id"] = json.dumps(user['_id'])
+    print(str(user["_id"]))
     
     # Trả về thông tin người dùng khi đăng nhập thành công
     return {
-        'message': 'User Sign in successfully',
+        'success': 'True',
         'data': {
-            'First name': user['fist_name'],
-            'Last name': user['last_name'],
-            'Username': user['username'],
-            'Email': user['email'],
-            'PhoneNumber': user['phoneNumber'],
-            'Address': user['address']
+            '_id': str(user["_id"]),
+            'first name': user['fist_name'],
+            'last name': user['last_name'],
+            'username': user['username'],
+            'email': user['email']
         }
     }, 201 
 
