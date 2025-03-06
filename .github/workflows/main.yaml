@@ -1,0 +1,47 @@
+name: FastAPI CI/CD
+on:
+  push:
+    branches: [backend]
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Check application structure
+        run: |
+          ls -la
+          python -m pip list
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          REFRESH_TOKEN_EXPIRE_MINUTES: ${{ secrets.REFRESH_TOKEN_EXPIRE_MINUTES }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          AIO_USERNAME_ADAFRUIT: ${{ secrets.AIO_USERNAME_ADAFRUIT }}
+          AIO_KEY_ADAFRUIT_1: ${{ secrets.AIO_KEY_ADAFRUIT_1 }}
+  # Deploy job to fit render.com
+  deploy:
+    name: Deploy
+    needs: [build] # Our build job must pass in order to run the deploy job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.SERVICE_ID }} # Can be found as part of the Deploy Hook
+          api-key: ${{ secrets.RENDER_API_KEY }} # Create your API key in Render Dashboard > Account Settings
