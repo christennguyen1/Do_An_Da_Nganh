@@ -46,8 +46,8 @@ def service_user_login(body):
         'success': 'True',
         'data': {
             '_id': str(user["_id"]),
-            'first name': user['fist_name'],
-            'last name': user['last_name'],
+            'firstName': user['fist_name'],
+            'lastName': user['last_name'],
             'username': user['username'],
             'email': user['email']
         }
