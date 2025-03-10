@@ -1,7 +1,7 @@
 from middleware.middleware import periodic_data_collection
 from fastapi import APIRouter,  Depends, Request
 from controller.auth_controller import controller_signin
-from controller.user_controller import controller_signup, controller_updatePassword, controller_updateInfo
+from controller.user_controller import controller_signup, controller_updatePassword, controller_updateInfo, controller_get_user_info
 from fastapi.security import OAuth2PasswordBearer
 import asyncio
 from authenticate.jwt_handler import verify_jwt_token, refresh_access_token
@@ -9,6 +9,12 @@ from authenticate.jwt_handler import verify_jwt_token, refresh_access_token
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+
+
+@router.get("/info/{user}")
+async def get_user_info(user: str, token: str = Depends(oauth2_scheme)):
+    print("Hello1")
+    return controller_get_user_info(user, token)
 
 
 @router.post("/signin")

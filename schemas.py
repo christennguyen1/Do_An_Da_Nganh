@@ -6,7 +6,32 @@ class SensorData(BaseModel):
     lux: float
     temperature: float
     humidity: float
-    timestamp: str  # Thay đổi kiểu dữ liệu thành datetime
+    month: str  # Thay đổi kiểu dữ liệu thành datetime
+    year: int
+
+    class Config:
+        # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
+        json_encoders = {
+            ObjectId: str
+        }
+
+class SensorDataWeek(BaseModel):
+    lux: float
+    temperature: float
+    humidity: float
+    day: str  # Thay đổi kiểu dữ liệu thành datetime
+
+    class Config:
+        # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
+        json_encoders = {
+            ObjectId: str
+        }
+
+class SensorDataDay(BaseModel):
+    lux: float
+    temperature: float
+    humidity: float
+    hour: int  # Thay đổi kiểu dữ liệu thành datetime
 
     class Config:
         # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
@@ -17,6 +42,14 @@ class SensorData(BaseModel):
 class User(BaseModel):
     username: str
     password: str
+
+class UserInfo(BaseModel):
+    firstName: str
+    lastName: str
+    username: str
+    email: str
+    phoneNumber: str
+    address: str
 
 class Notification:
     def __init__(self, user_id, message, timestamp=None, seen=False):

@@ -36,44 +36,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ses_client = boto3.client(
-    'ses',
-    region_name=AWS_REGION,
-    aws_access_key_id=AWS_ACCESS_KEY,
-    aws_secret_access_key=AWS_SECRET_KEY
-)
+# ses_client = boto3.client(
+#     'ses',
+#     region_name=AWS_REGION,
+#     aws_access_key_id=AWS_ACCESS_KEY,
+#     aws_secret_access_key=AWS_SECRET_KEY
+# )
 
-class EmailContent(BaseModel):
-    EmailAddresses: List[str]  # Đã sửa lỗi chính tả
-    message: str = "Hello, this is a test message"
+# class EmailContent(BaseModel):
+#     EmailAddresses: List[str]  # Đã sửa lỗi chính tả
+#     message: str = "Hello, this is a test message"
 
-@app.post("/sendMessage")
-async def send_message(email_content: EmailContent):
-    try:
-        response = ses_client.send_email(
-            Source='vinh.nguyen123@hcmut.edu.vn',
-            Destination={
-                'ToAddresses': email_content.EmailAddresses
-            },
-            Message={
-                'Subject': {'Data': 'Test Email from FastAPI'},
-                'Body': {'Text': {'Data': email_content.message}}
-            }
-        )
-        return {"Message": "Email Sent", "Response": response}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")
+# @app.post("/sendMessage")
+# async def send_message(email_content: EmailContent):
+#     try:
+#         response = ses_client.send_email(
+#             Source='vinh.nguyen123@hcmut.edu.vn',
+#             Destination={
+#                 'ToAddresses': email_content.EmailAddresses
+#             },
+#             Message={
+#                 'Subject': {'Data': 'Test Email from FastAPI'},
+#                 'Body': {'Text': {'Data': email_content.message}}
+#             }
+#         )
+#         return {"Message": "Email Sent", "Response": response}
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")
 
-@app.post("/verifyEmailAddresses")
-async def verify_email_addresses(email_content: EmailContent):
-    try:
-        responses = []
-        for email in email_content.EmailAddresses:
-            response = ses_client.verify_email_address(EmailAddress=email)
-            responses.append(response)
-        return {
-            "Message": "Verification mail sent",
-            "Response": responses
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")
+# @app.post("/verifyEmailAddresses")
+# async def verify_email_addresses(email_content: EmailContent):
+#     try:
+#         responses = []
+#         for email in email_content.EmailAddresses:
+#             response = ses_client.verify_email_address(EmailAddress=email)
+#             responses.append(response)
+#         return {
+#             "Message": "Verification mail sent",
+#             "Response": responses
+#         }
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")

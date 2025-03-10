@@ -4,6 +4,8 @@ from fastapi import Request
 from werkzeug.security import check_password_hash, generate_password_hash
 import asyncio
 import json
+from schemas import UserInfo
+from fastapi.encoders import jsonable_encoder  # Thêm thư viện này
 
 
 def service_user_login(body):
@@ -12,19 +14,30 @@ def service_user_login(body):
     # Kiểm tra nếu email và password được gửi đến
     if not data or not data.get('email') or not data.get('password'):
         return {
-                'message': 'Email and password required', 
+                'message': 'Email or phone and password required', 
                 'errCode': 1
             }, 400
 
     email = data.get('email')
     password = data.get('password')
 
-    # Tìm người dùng theo email trong MongoDB
-    user = collection_user.find_one({'email': email})
+    global user
 
+    # Tìm người dùng theo email trong MongoDB
+    if "@" in email:
+        user = collection_user.find_one({'email': email})
+    else:
+        user = collection_user.find_one({'phoneNumber': email})
+
+    if((not user)):
+        return {
+                'message': 'User not found', 
+                'data': {}
+            }, 404
+    
     user_status_delete = user.get('isDeleted', 'Unknown')
 
-    if((not user) or (user_status_delete == True)):
+    if((user_status_delete == True)):
         return {
                 'message': 'User not found', 
                 'data': {}
@@ -44,12 +57,14 @@ def service_user_login(body):
     # Trả về thông tin người dùng khi đăng nhập thành công
     return {
         'success': 'True',
+        'message': "Login successfully",
         'data': {
             '_id': str(user["_id"]),
             'firstName': user['fist_name'],
             'lastName': user['last_name'],
             'username': user['username'],
-            'email': user['email']
+            'email': user['email'],
+            'phone': user['phoneNumber']
         }
     }, 201 
 
@@ -124,8 +139,8 @@ def service_user_register(body):
     return {
         'message': 'User registered successfully',
         'data': {
-            'First name': user_data['fist_name'],
-            'Last name': user_data['last_name'],
+            'firstName': user_data['fist_name'],
+            'lastName': user_data['last_name'],
             'Username': user_data['username'],
             'Email': user_data['email'],
             'PhoneNumber': user_data['phoneNumber'],
@@ -225,7 +240,6 @@ def service_user_updateInfo(body):
     lname = data.get('last_name')
     username = data.get('username')
     email = data.get('email')
-    phoneNumber = data.get('phoneNumber')
     address = data.get('address')
 
     user = collection_user.find_one({'email': email})
@@ -253,13 +267,6 @@ def service_user_updateInfo(body):
     else:
         new_values["$set"]['last_name'] = user.get('last_name')
 
-
-    if phoneNumber:
-        new_values["$set"]['phoneNumber'] = phoneNumber
-    else:
-        new_values["$set"]['phoneNumber'] = user.get('phoneNumber')
-
-
     if address:
         new_values["$set"]['address'] = address
     else:
@@ -278,7 +285,42 @@ def service_user_updateInfo(body):
             'First name': fname,
             'Last name': lname,
             'Username': username,
-            'PhoneNumber': phoneNumber,
             'Address': address
         }
     }, 201 
+
+def service_user_getInfo(user: str):
+
+    print("Hello3")
+
+    if not user:
+        return {
+                'message': 'Email is required', 
+                'errCode': 1
+            }, 400
+    
+    print("Hello4")
+
+    userDatas = collection_user.find_one({'email': user})
+
+    print("Hello5")
+
+    if not userDatas:
+        return {
+                'message': 'User email is not valid', 
+                'errCode': 1
+            }, 400
+    
+    return {
+        'success': 'True',
+        'message': 'Get User Profile Successfully',
+        'data': {
+            'firstName': userDatas['fist_name'],
+            'lastName': userDatas['last_name'],
+            'username': userDatas['username'],
+            'email': userDatas['email'],
+            'phone': userDatas['phoneNumber'],
+            'address': userDatas['address']
+        }
+    }, 201 
+
