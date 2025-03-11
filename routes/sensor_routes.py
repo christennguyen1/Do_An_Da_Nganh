@@ -12,7 +12,7 @@ router = APIRouter()
 # async def get_sensor_data(user: str, token: str = Depends(oauth2_scheme)):
 #     return controller_get_data(user, token)
 
-@router.get("/all/{user}")
+@router.get("/latest/{user}")
 async def get_sensor_data(user: str):
     return controller_get_data(user)
 

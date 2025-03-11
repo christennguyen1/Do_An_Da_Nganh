@@ -6,6 +6,18 @@ class SensorData(BaseModel):
     lux: float
     temperature: float
     humidity: float
+    timestamp: str 
+
+    class Config:
+        # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
+        json_encoders = {
+            ObjectId: str
+        }
+
+class SensorDataMonth(BaseModel):
+    lux: float
+    temperature: float
+    humidity: float
     month: str  # Thay đổi kiểu dữ liệu thành datetime
     year: int
 

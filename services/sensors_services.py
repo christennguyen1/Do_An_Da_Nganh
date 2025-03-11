@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder  # Thêm thư viện này
 from databases.databases import *
-from schemas import SensorData, SensorDataWeek, SensorDataDay
+from schemas import SensorData, SensorDataWeek, SensorDataDay, SensorDataMonth
 import asyncio
 from datetime import datetime, timedelta, timezone
 import pandas as pd
@@ -70,12 +70,11 @@ def service_get_all_data(user: str):
     # Tạo danh sách dữ liệu cảm biến
     sensor_data_list = [
         SensorData(
-            lux=sensor["lux"], 
-            temperature=sensor["temperature"], 
-            humidity=sensor["humidity"], 
-            timestamp=datetime.strptime(sensor["timestamp"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d-%H:%M:%S")  # Đảm bảo timestamp theo định dạng mong muốn
+            lux=sensors[0]["lux"], 
+            temperature=sensors[0]["temperature"], 
+            humidity=sensors[0]["humidity"], 
+            timestamp=datetime.strptime(sensors[0]["timestamp"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d-%H:%M:%S")  # Đảm bảo timestamp theo định dạng mong muốn
         ) 
-        for sensor in sensors
     ]
 
 
@@ -139,7 +138,7 @@ def service_get_all_data_month(user: str):
     print(monthly_avg)
 
     sensor_data_list = [
-        SensorData(
+        SensorDataMonth(
             lux=row["lux"],
             temperature=row["temperature"],
             humidity=row["humidity"],
