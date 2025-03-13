@@ -62,7 +62,7 @@ def controller_updateInfo(body):
 
 
     
-def controller_get_user_info(user: str, token):
+def controller_get_user_info(user: str):
     try:
         # Truy vấn tất cả các document trong collection
         # payload = verify_jwt_token(token)

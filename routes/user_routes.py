@@ -8,13 +8,18 @@ from authenticate.jwt_handler import verify_jwt_token, refresh_access_token
 
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
+
+# @router.get("/info/{user}")
+# async def get_user_info(user: str, token: str = Depends(oauth2_scheme)):
+#     print("Hello1")
+#     return controller_get_user_info(user, token)
 
 @router.get("/info/{user}")
-async def get_user_info(user: str, token: str = Depends(oauth2_scheme)):
+async def get_user_info(user: str):
     print("Hello1")
-    return controller_get_user_info(user, token)
+    return controller_get_user_info(user)
 
 
 @router.post("/signin")
@@ -41,15 +46,15 @@ async def updateInfo_route(request: Request):
     return controller_updateInfo(body)
 
 
-@router.post("/refresh-token")
-def refresh_token(token: str = Depends(oauth2_scheme)):
-    return refresh_access_token(token)
+# @router.post("/refresh-token")
+# def refresh_token(token: str = Depends(oauth2_scheme)):
+#     return refresh_access_token(token)
 
 
-@router.get("/get-message")
-async def get_message(token: str = Depends(oauth2_scheme)):
-    username = verify_jwt_token(token)
-    return {"message": f"Chào mừng {username} đến với hệ thống!"}
+# @router.get("/get-message")
+# async def get_message(token: str = Depends(oauth2_scheme)):
+#     username = verify_jwt_token(token)
+#     return {"message": f"Chào mừng {username} đến với hệ thống!"}
 
 
 @router.on_event("startup")

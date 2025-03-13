@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 # Update relay status
-def controller_update_relay(body, token):
+def controller_update_relay(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
@@ -26,7 +26,7 @@ def controller_update_relay(body, token):
     
 
 # Get relay status
-def controller_get_relay(body, token):
+def controller_get_relay(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
@@ -48,7 +48,7 @@ def controller_get_relay(body, token):
     
 
 # Get relay status
-def controller_delete_relay(body, token):
+def controller_delete_relay(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
@@ -70,7 +70,7 @@ def controller_delete_relay(body, token):
 
 
 # Create new relay
-def controller_create_relay(body, token):
+def controller_create_relay(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
