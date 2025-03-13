@@ -31,13 +31,12 @@ def service_update_relay(body):
 
     print(relay)
 
-    # relay_status_delete = relay.get('isDeleted', 'Unknown')
-
-    # if ((not relay) or (relay_status_delete == True)):
-    #     return {
-    #             'message': 'Relay not in system', 
-    #             'errCode': 1
-    #         }, 400
+    if relay == None:
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
+    
     query = {"relayName": relay_name, 'email_user': email_user}
     new_values = {
         "$set": {
@@ -77,7 +76,11 @@ def service_get_relay(body):
 
     relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
 
-    print(relay)
+    if relay == None:
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
         
     return {
         'message': 'Get Relay successful',
@@ -102,12 +105,22 @@ def service_delete_relay(body):
                 'errCode': 1
             }, 400
     
-    print(relay_name)
+    relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
+
+    if relay == None:
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
     
 
     relay = collection_relay.delete_one({'relayName': relay_name, 'email_user': email_user})
 
-    print(relay)
+    if relay == None:
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
         
     return {
         'message': 'Delete Relay successful',
