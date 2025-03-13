@@ -1,1 +1,1 @@
-nutnhan = ["nutnhan-fan", "nutnhan-light","nutnhan-door", "nutnhan-pump"]
+nutnhan = ["nutnhan_1", "nutnhan_2","nutnhan_3", "nutnhan_4"]

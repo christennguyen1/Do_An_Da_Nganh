@@ -29,6 +29,8 @@ def service_update_relay(body):
 
     relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
 
+    print(relay)
+
     # relay_status_delete = relay.get('isDeleted', 'Unknown')
 
     # if ((not relay) or (relay_status_delete == True)):
@@ -52,6 +54,65 @@ def service_update_relay(body):
             'relayName': relay_name,
             'status': status_relay,
             'timestamp': vietnam_time
+        }
+    }, 200
+
+    
+def service_get_relay(body):
+    data = body
+
+    print(data)
+
+    email_user = data.get('email_user')
+    relay_name = data.get('relayName')
+
+    if relay_name not in nutnhan:
+        return {
+                'message': 'Relay not in server', 
+                'errCode': 1
+            }, 400
+    
+    print(relay_name)
+    
+
+    relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
+
+    print(relay)
+        
+    return {
+        'message': 'Get Relay successful',
+        'data': {
+            'relayName': relay["relayName"],
+            'status': relay["status"]
+        }
+    }, 200
+
+
+def service_delete_relay(body):
+    data = body
+
+    print(data)
+
+    email_user = data.get('email_user')
+    relay_name = data.get('relayName')
+
+    if relay_name not in nutnhan:
+        return {
+                'message': 'Relay not in server', 
+                'errCode': 1
+            }, 400
+    
+    print(relay_name)
+    
+
+    relay = collection_relay.delete_one({'relayName': relay_name, 'email_user': email_user})
+
+    print(relay)
+        
+    return {
+        'message': 'Delete Relay successful',
+        'data': {
+            'relayName': relay_name
         }
     }, 200
 
