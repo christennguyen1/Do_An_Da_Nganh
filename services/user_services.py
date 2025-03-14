@@ -27,7 +27,7 @@ def service_user_login(body):
     if "@" in email:
         user = collection_user.find_one({'email': email})
     else:
-        user = collection_user.find_one({'phoneNumber': email})
+        user = collection_user.find_one({'phoneNumber': int(email)})
 
     if((not user)):
         return {
@@ -64,7 +64,7 @@ def service_user_login(body):
             'lastName': user['last_name'],
             'username': user['username'],
             'email': user['email'],
-            'phone': user['phone']
+            'phone': user['phoneNumber']
         }
     }, 201 
 
