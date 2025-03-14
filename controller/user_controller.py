@@ -62,12 +62,12 @@ def controller_updateInfo(body):
 
 
     
-def controller_get_user_info(user: str):
+def controller_get_user_info(body):
     try:
         # Truy vấn tất cả các document trong collection
         # payload = verify_jwt_token(token)
-        print("Hello2")
-        data, status = service_user_getInfo(user)
+        print(body)
+        data, status = service_user_getInfo(body)
         response = {
             "message": data.get('message'),
             "data": data.get('data'),

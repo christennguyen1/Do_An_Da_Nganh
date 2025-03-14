@@ -16,10 +16,11 @@ router = APIRouter()
 #     print("Hello1")
 #     return controller_get_user_info(user, token)
 
-@router.get("/info/{user}")
-async def get_user_info(user: str):
-    print("Hello1")
-    return controller_get_user_info(user)
+@router.get("/info")
+async def get_user_info(request: Request):
+    body = await request.json()
+    print(body)
+    return controller_get_user_info(body)
 
 
 @router.post("/signin")

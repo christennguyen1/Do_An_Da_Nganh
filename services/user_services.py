@@ -64,7 +64,7 @@ def service_user_login(body):
             'lastName': user['last_name'],
             'username': user['username'],
             'email': user['email'],
-            'phone': user['phoneNumber']
+            'phone': user['phone']
         }
     }, 201 
 
@@ -81,12 +81,12 @@ def service_user_register(body):
                 'errCode': 1
             }, 400
 
-    fname = data.get('first_name')
-    lname = data.get('last_name')
+    fname = data.get('firstName')
+    lname = data.get('lastName')
     username = data.get('username')
     password = data.get('password')
     email = data.get('email')
-    phoneNumber = data.get('phoneNumber')
+    phoneNumber = data.get('phone')
     address = data.get('address')
     role = data.get('role')
 
@@ -143,7 +143,7 @@ def service_user_register(body):
             'lastName': user_data['last_name'],
             'Username': user_data['username'],
             'Email': user_data['email'],
-            'PhoneNumber': user_data['phoneNumber'],
+            'Phone': user_data['phoneNumber'],
             'Address': user_data['address']
         }
     }, 201  
@@ -289,7 +289,11 @@ def service_user_updateInfo(body):
         }
     }, 201 
 
-def service_user_getInfo(user: str):
+def service_user_getInfo(body):
+
+    data = body
+
+    user = data.get("email")
 
     print("Hello3")
 
