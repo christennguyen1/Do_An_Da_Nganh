@@ -236,8 +236,8 @@ def service_user_updateInfo(body):
                 'errCode': 1
             }, 400
 
-    fname = data.get('first_name')
-    lname = data.get('last_name')
+    fname = data.get('firstName')
+    lname = data.get('lastName')
     username = data.get('username')
     email = data.get('email')
     address = data.get('address')
@@ -260,32 +260,36 @@ def service_user_updateInfo(body):
         new_values["$set"]['fist_name'] = fname
     else:
         new_values["$set"]['fist_name'] = user.get('first_name')
+        fname = user.get('first_name')
 
 
     if lname:
         new_values["$set"]['last_name'] = lname
     else:
         new_values["$set"]['last_name'] = user.get('last_name')
+        lname = user.get('last_name')
 
     if address:
         new_values["$set"]['address'] = address
     else:
         new_values["$set"]['address'] = user.get('address')
+        address = user.get('address')
 
     if username:
         new_values["$set"]['username'] = username
     else:
         new_values["$set"]['username'] = user.get('username')
+        username = user.get('username')
             
     collection_user.update_one(query, new_values)
 
     return {
         'message': 'User update successfully',
         'data': {
-            'First name': fname,
-            'Last name': lname,
-            'Username': username,
-            'Address': address
+            'firstName': fname,
+            'lastName': lname,
+            'username': username,
+            'address': address
         }
     }, 201 
 
