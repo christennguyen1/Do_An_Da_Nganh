@@ -18,9 +18,7 @@ def controller_signin(body):
         response = {
             "success": data.get('success'),
             "message": data.get('message'),
-            "data": data.get('data'),
-            "refresh_token": refresh_token,
-            "access_token": access_token
+            "data": data.get('data')
             # "token_type": "Bearer",
             # "status": status,
             # "errCode": 0
