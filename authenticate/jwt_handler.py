@@ -13,7 +13,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 def create_jwt_token(data: dict):
     expiration = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    data.update({"exp": expiration})
+    # data.update({"exp": expiration})
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def verify_jwt_token(token: str):
@@ -32,7 +32,7 @@ def verify_jwt_token(token: str):
 # Tạo refresh token
 def create_refresh_token(data: dict):
     expiration = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    data.update({"exp": expiration})
+    # data.update({"exp": expiration})
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 # Làm mới access token

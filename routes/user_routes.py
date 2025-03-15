@@ -8,19 +8,19 @@ from authenticate.jwt_handler import verify_jwt_token, refresh_access_token
 
 
 router = APIRouter()
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
-
-# @router.get("/info/{user}")
-# async def get_user_info(user: str, token: str = Depends(oauth2_scheme)):
-#     print("Hello1")
-#     return controller_get_user_info(user, token)
 
 @router.get("/info")
-async def get_user_info(request: Request):
-    body = await request.json()
-    print(body)
-    return controller_get_user_info(body)
+async def get_user_info(token: str = Depends(oauth2_scheme)):
+    print("Hello1")
+    return controller_get_user_info(token)
+
+# @router.get("/info")
+# async def get_user_info(request: Request):
+#     body = await request.json()
+#     print(body)
+#     return controller_get_user_info(body)
 
 
 @router.post("/signin")
@@ -35,21 +35,21 @@ async def signup_route(request: Request):
     return controller_signup(body)
 
 
-@router.post("/updatePassword")
+@router.put("/updatePassword")
 async def updatePassword_route(request: Request):
     body = await request.json()
     return controller_updatePassword(body)
 
 
-@router.post("/updateInfo")
+@router.put("/updateInfo")
 async def updateInfo_route(request: Request):
     body = await request.json()
     return controller_updateInfo(body)
 
 
-# @router.post("/refresh-token")
-# def refresh_token(token: str = Depends(oauth2_scheme)):
-#     return refresh_access_token(token)
+@router.post("/refresh-token")
+def refresh_token(token: str = Depends(oauth2_scheme)):
+    return refresh_access_token(token)
 
 
 # @router.get("/get-message")

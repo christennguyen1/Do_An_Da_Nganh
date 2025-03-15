@@ -18,10 +18,12 @@ def controller_signin(body):
         response = {
             "success": data.get('success'),
             "message": data.get('message'),
-            "data": data.get('data')
-            # "token_type": "Bearer",
-            # "status": status,
-            # "errCode": 0
+            "data": data.get('data'),
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "Bearer",
+            "status": status,
+            "errCode": 0
         }
         return JSONResponse(content=response, status_code=status)
     except Exception as e:

@@ -244,9 +244,7 @@ def service_user_updateInfo(body):
 
     user = collection_user.find_one({'email': email})
 
-    user_status_delete = user.get('isDeleted', 'Unknown')
-
-    if ((not user) or (user_status_delete == True)):
+    if ((not user)):
          return {
                 'message': 'User not found', 
                 'errCode': 1
@@ -289,15 +287,14 @@ def service_user_updateInfo(body):
             'firstName': fname,
             'lastName': lname,
             'username': username,
+            'email': user.get('email'),
+            'phone': user.get('phoneNumber'),
             'address': address
         }
     }, 201 
 
 def service_user_getInfo(body):
-
-    data = body
-
-    user = data.get("email")
+    user = body
 
     print("Hello3")
 
