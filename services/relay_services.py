@@ -2,6 +2,7 @@ from databases.databases import *
 from datetime import datetime
 from constant.constant import nutnhan
 import pytz
+from schemas import RelayData
 
 
 import requests
@@ -243,21 +244,14 @@ def service_create_relay(body):
     relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
 
     if relay:
-        relay_status_delete = relay.get('isDeleted', 'Unknown')
-        if relay_status_delete == False:
-            return {
-                    'message': 'Relay was setted up', 
-                    'errCode': 1
-                }, 400
-        else:
-            query = {"relayName": relay_name, 'email_user': email_user}
-            new_values = {
-                "$set": {
-                    'status': status_relay, "isDeleted": False, "timestamp": vietnam_time
-                    }
-                }
+        query = {"relayName": relay_name, 'email_user': email_user}
+        new_values = {
+            "$set": {
+                'status': status_relay, "isDeleted": False, "timestamp": vietnam_time
+            }
+        }
             
-            collection_relay.update_one(query, new_values)
+        collection_relay.update_one(query, new_values)
     else:
         if relay_name not in nutnhan:
             return {
@@ -277,4 +271,43 @@ def service_create_relay(body):
             'status': status_relay,
             'timestamp': vietnam_time
         }
+    }, 200
+
+
+def service_get_relay_history(body):
+    data = body
+    relay_name = data.get('relayName')
+
+    if relay_name not in nutnhan:
+        return {
+                'message': 'Relay not in server', 
+                'errCode': 1
+            }, 400
+    
+    print(relay_name)
+    
+
+    relayList = collection_relay.find({'relayName': relay_name})
+
+    if relayList == None: 
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
+    
+    relay_data_list = [
+        RelayData(
+            relayName=relay["relayName"],
+            email_user=relay["email_user"],
+            status=relay["status"],
+            timestamp=relay["timestamp"].strftime("%Y-%m-%dT%H:%M:%S") if isinstance(relay["timestamp"], datetime) else relay["timestamp"],
+        )
+        for relay in relayList
+    ]
+
+    print(relay_data_list)
+        
+    return {
+        'message': 'Get Relay successful',
+        'data': relay_data_list
     }, 200

@@ -14,12 +14,38 @@ class SensorData(BaseModel):
             ObjectId: str
         }
 
+class RelayData(BaseModel):
+    relayName: str
+    email_user: str
+    status: str
+    timestamp: str 
+
+    class Config:
+        # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
+        json_encoders = {
+            ObjectId: str
+        }
+
 class SensorDataMonth(BaseModel):
     lux: float
     temperature: float
     humidity: float
     month: str  # Thay đổi kiểu dữ liệu thành datetime
     year: int
+
+    class Config:
+        # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model
+        json_encoders = {
+            ObjectId: str
+        }
+
+class SchedulerData(BaseModel):
+    id: str
+    email_user: str
+    relayName: str
+    timeStart: str  
+    timeEnd: str
+    timestamps: str
 
     class Config:
         # Dùng để hỗ trợ chuyển đổi ObjectId sang string trong Pydantic model

@@ -1,5 +1,5 @@
 from fastapi import APIRouter,  Depends, Request
-from controller.setup_controller import controller_setup_temperature, controller_setup_pir, controller_setup_light
+from controller.setup_controller import controller_setup_temperature, controller_setup_pir, controller_setup_light, controller_create_setup_scheduler, controller_get_setup_scheduler, controller_get_setup_scheduler_ByID, controller_update_scheduler, controller_delete_scheduler
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -13,17 +13,34 @@ async def create_setup_temperature(request: Request, token: str = Depends(oauth2
     return controller_setup_temperature(body, token)
 
 
-
-@router.post("/pir")
-async def create_setup_pir(request: Request, token: str = Depends(oauth2_scheme)):
+@router.post("/scheduler")
+async def create_setup_scheduler(request: Request):
     body = await request.json()
-    return controller_setup_pir(body, token)
+    print("hello1: ", body)
+    return controller_create_setup_scheduler(body)
 
 
+@router.get("/scheduler")
+async def get_setup_scheduler():
+    return controller_get_setup_scheduler()
 
-@router.post("/light")
-async def create_setup_light(request: Request, token: str = Depends(oauth2_scheme)):
+
+@router.get("/schedulerById")
+async def get_setup_schedulerById(request: Request):
     body = await request.json()
-    return controller_setup_light(body, token)
+    return controller_get_setup_scheduler_ByID(body)
+
+
+@router.put("/scheduler")
+async def update_setup_scheduler(request: Request):
+    body = await request.json()
+    print("hello1: ", body)
+    return controller_update_scheduler(body)
+
+@router.delete("/scheduler")
+async def create_setup_scheduler(request: Request):
+    body = await request.json()
+    print("hello1: ", body)
+    return controller_delete_scheduler(body)
 
 

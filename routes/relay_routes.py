@@ -1,5 +1,5 @@
 from fastapi import APIRouter,  Depends, Request
-from controller.relay_controller import controller_update_relay, controller_create_relay, controller_get_relay, controller_delete_relay
+from controller.relay_controller import controller_update_relay, controller_create_relay, controller_get_relay, controller_delete_relay, controller_get_relay_history
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -41,6 +41,11 @@ async def update_relay_data(request: Request):
 async def get_relay_data(request: Request):
     body = await request.json()
     return controller_get_relay(body)
+
+@router.get("/getHistory")
+async def get_relay_data_history(request: Request):
+    body = await request.json()
+    return controller_get_relay_history(body)
 
 
 @router.post("/create")
