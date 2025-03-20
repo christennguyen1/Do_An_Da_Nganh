@@ -1,5 +1,5 @@
 from authenticate.jwt_handler import verify_jwt_token
-from services.relay_services import service_update_relay, service_create_relay, service_get_relay, service_delete_relay, service_get_relay_history
+from services.relay_services import service_update_relay, service_create_relay, service_get_relay, service_delete_relay, service_get_relay_history, service_getAllStatus_relay
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
@@ -46,6 +46,27 @@ def controller_get_relay(body):
             "error": 1
         }, 500
     
+
+# Get relay status
+def controller_getAllStatus_relay(body):
+# Xác thực token
+    try:
+        # Truy vấn tất cả các document trong collection
+        # payload = verify_jwt_token(token)
+        data, status = service_getAllStatus_relay(body)
+        response = {
+            "message": data.get('message'),
+            "data": jsonable_encoder(data.get('data')),
+            "status": status,
+            "errCode": 0
+        }
+        return JSONResponse(content=response, status_code=status)
+    except Exception as e:
+        return {
+            "status": 500,
+            "message": str(e),
+            "error": 1
+        }, 500
 
 # Get relay status
 def controller_delete_relay(body):

@@ -3,7 +3,7 @@ from datetime import datetime
 from constant.constant import nutnhan
 import pytz
 from schemas import RelayData
-from pymongo import DESCENDING
+from pymongo  import DESCENDING
 
 
 import requests
@@ -141,6 +141,40 @@ def service_update_relay(body):
 
     
 def service_get_relay(body):
+    data = body
+
+    print(data)
+
+    email_user = data.get('email_user')
+    relay_name = data.get('relayName')
+
+    if relay_name not in nutnhan:
+        return {
+                'message': 'Relay not in server', 
+                'errCode': 1
+            }, 400
+    
+    print(relay_name)
+    
+
+    relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
+
+    if relay == None:
+        return {
+                'message': 'Relay not in system', 
+                'errCode': 1
+            }, 400
+        
+    return {
+        'message': 'Get Relay successful',
+        'data': {
+            'relayName': relay["relayName"],
+            'status': relay["status"]
+        }
+    }, 200
+
+
+def service_getAllStatus_relay(body):
 
     if collection_user.count_documents({"email": body.get("email_user")}) == 0:
         return {
