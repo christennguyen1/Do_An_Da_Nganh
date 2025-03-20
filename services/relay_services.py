@@ -3,6 +3,7 @@ from datetime import datetime
 from constant.constant import nutnhan
 import pytz
 from schemas import RelayData
+from pymongo import DESCENDING
 
 
 import requests
@@ -140,36 +141,40 @@ def service_update_relay(body):
 
     
 def service_get_relay(body):
-    data = body
 
-    print(data)
-
-    email_user = data.get('email_user')
-    relay_name = data.get('relayName')
-
-    if relay_name not in nutnhan:
+    if collection_user.count_documents({"email": body.get("email_user")}) == 0:
         return {
-                'message': 'Relay not in server', 
-                'errCode': 1
-            }, 400
-    
-    print(relay_name)
-    
+            'message': 'User was not registed',
+            'data': []
+        }, 200
 
-    relay = collection_relay.find_one({'relayName': relay_name, 'email_user': email_user})
+    relay_names = ['nutnhan_1', 'nutnhan_2', 'nutnhan_3', 'nutnhan_4']
+    
+    # Tạo dictionary để lưu trạng thái mới nhất của từng relay
+    latest_relay_status = {}
 
-    if relay == None:
-        return {
-                'message': 'Relay not in system', 
-                'errCode': 1
-            }, 400
+    for relay_name in relay_names:
+        relay = collection_relay.find_one(
+            {'relayName': relay_name}, 
+            sort=[('timestamp', DESCENDING)]  # Sắp xếp theo timestamp mới nhất
+        )
+
+        if relay:
+            latest_relay_status[relay_name] = {
+                'status': relay['status'],
+                'timestamp': relay['timestamp']
+            }
+        else:
+            latest_relay_status[relay_name] = {
+                'status': None,
+                'timestamp': None
+            }
         
+    print(latest_relay_status)
+
     return {
         'message': 'Get Relay successful',
-        'data': {
-            'relayName': relay["relayName"],
-            'status': relay["status"]
-        }
+        'data': latest_relay_status
     }, 200
 
 
