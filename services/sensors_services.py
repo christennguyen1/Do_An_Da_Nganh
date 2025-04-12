@@ -6,6 +6,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+import pytz
 
 
 
@@ -37,6 +38,44 @@ from dateutil.relativedelta import relativedelta
 #         'data': response_data
 #     }, 200
 
+def service_post_all_data(body):
+    data = body
+
+    temperature = data.get('temperature')
+    humidity = data.get('humidity')
+    lux = data.get('lux')
+    soil = data.get('soil')
+
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    vietnam_time = datetime.now(vietnam_tz)
+
+    formatted_time = vietnam_time.strftime("%Y-%m-%dT%H:%M:%S")
+    print(formatted_time)
+
+    print(formatted_time)
+
+    sensor_data = {
+        'temperature': temperature,
+        'humidity': humidity,
+        'lux': lux,
+        'soil': soil,
+        'timestamp': formatted_time
+    }
+
+    # Kiểm tra nếu người dùng đã tồn tại
+    collection_sensor_data.insert_one(sensor_data)
+
+    # Trả về thông tin người dùng vừa đăng ký
+    return {
+        'message': 'Data sensors post successfully',
+        'data': {
+            'temperature': sensor_data['temperature'],
+            'humidity': sensor_data['humidity'],
+            'lux': sensor_data['lux'],
+            'soil': sensor_data['soil'],
+            'timestamp': formatted_time
+        }
+    }, 201
 
 
 def service_get_all_data(user: str):

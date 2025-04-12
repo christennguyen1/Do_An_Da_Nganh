@@ -3,163 +3,175 @@ from datetime import datetime
 from constant.constant import nutnhan
 import json
 import pytz
+import time
 from bson import ObjectId
-
-
-def service_setup_temperature(body):
-    data = body
-
-    email_user = data.get('email_user')
-    temperature_value = data.get('temperature_value')
-    status = data.get('status')
-
-    if collection_user.count_documents({"email": email_user}) == 0:
-        return {
-            'message': 'User was not registed',
-            'data': []
-        }, 200
-    
-    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    vietnam_time = datetime.now(vietnam_tz)
-
-    data = {
-        'email_user': email_user,
-        'value': temperature_value,
-        'status': status,
-        'timestamp': vietnam_time,
-    }
-
-    collection_setup_temperature.insert_one(data)
-    
-    publish_to_adafruit("va-tem", temperature_value if status == "ON" else 0)
-        
-
-    return {
-        'message': 'Create Relay successful',
-        'data': {
-            'email_user': email_user,
-            'value': temperature_value,
-            'status': status,
-            'timestamp': vietnam_time,
-        }
-    }, 200
-
-
-def service_setup_pir(body):
-    data = body
-
-    email_user = data.get('email_user')
-    pir_value = data.get('pir_value')
-    status = data.get('status')
-
-    if collection_user.count_documents({"email": email_user}) == 0:
-        return {
-            'message': 'User was not registed',
-            'data': []
-        }, 200
-    
-    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    vietnam_time = datetime.now(vietnam_tz)
-
-    data = {
-        'email_user': email_user,
-        'value': pir_value,
-        'status': status,
-        'timestamp': vietnam_time,
-    }
-
-    collection_setup_pir.insert_one(data)
-
-    publish_to_adafruit("va-pir", pir_value if status == "ON" else 0)
-        
-    return {
-        'message': 'Create Relay successful',
-        'data': {
-            'email_user': email_user,
-            'value': pir_value,
-            'status': status,
-            'timestamp': vietnam_time,
-        }
-    }, 200
-
-
-
-def service_setup_light(body):
-    data = body
-
-    email_user = data.get('email_user')
-    light_value = data.get('light_value')
-    status = data.get('status')
-
-    if collection_user.count_documents({"email": email_user}) == 0:
-        return {
-            'message': 'User was not registed',
-            'data': []
-        }, 200
-    
-    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    vietnam_time = datetime.now(vietnam_tz)
-
-    data = {
-        'email_user': email_user,
-        'value': light_value,
-        'status': status,
-        'timestamp': vietnam_time,
-    }
-
-    collection_setup_light.insert_one(data)
-
-    publish_to_adafruit("va-lux", light_value if status == "ON" else 0)
-        
-    return {
-        'message': 'Create Set up light successful',
-        'data': {
-            'email_user': email_user,
-            'value': light_value,
-            'status': status,
-            'timestamp': vietnam_time,
-        }
-    }, 200
 
 
 def service_create_setup_scheduler(body):
     data = body
-
-    print("Hello3: ",data)
-
+    
     email_user = data.get('email')
     relayName = data.get('relayName')
     timeStart = data.get('timeStart')
     timeEnd = data.get('timeEnd')
-
+    repeatDaily = data.get('repeatDaily')
+    
     if collection_user.count_documents({"email": email_user}) == 0:
         return {
             'message': 'User was not registed',
             'data': []
         }, 200
     
+    # Convert timeStart and timeEnd to datetime objects for comparison
+    # Assuming timeStart and timeEnd are in ISO format "YYYY-MM-DD HH:MM:SS" or similar
+    try:
+        # Parsing datetime strings - adjust format as needed
+        start_datetime = datetime.fromisoformat(timeStart)
+        end_datetime = datetime.fromisoformat(timeEnd)
+    except ValueError:
+        return {
+            'message': 'Invalid datetime format. Please use YYYY-MM-DD HH:MM:SS format',
+            'data': []
+        }, 400
+    
+    # Check for conflicts with existing schedules for the same relay
+    existing_schedules = collection_setup_scheduler.find({
+        'relayName': relayName
+    })
+
+    if existing_schedules:
+        for schedule in existing_schedules:
+            # Parse existing datetime strings
+            existing_start = datetime.fromisoformat(schedule['timeStart'])
+            existing_end = datetime.fromisoformat(schedule['timeEnd'])
+            
+            # Check for overlap - if new start is before existing end AND new end is after existing start
+            if (start_datetime <= existing_start and end_datetime >= existing_end):
+                # Format recommendation datetime
+                recommended_start = existing_end.strftime("%Y-%m-%d %H:%M:%S")
+                
+                return {
+                    'message': 'Time conflict detected',
+                    'data': {
+                        'conflict': True,
+                        'conflicting_schedule': {
+                            'timeStart': schedule['timeStart'],
+                            'timeEnd': schedule['timeEnd']
+                        },
+                        'recommendation': f'You should schedule from {start_datetime.strftime("%Y-%m-%d %H:%M:%S")} to {existing_start.strftime("%Y-%m-%d %H:%M:%S")} and from {existing_end.strftime("%Y-%m-%d %H:%M:%S")} to {end_datetime.strftime("%Y-%m-%d %H:%M:%S")}'
+                    }
+                }, 409
+
+        
+            if (start_datetime >= existing_start and end_datetime <= existing_end):
+                # Format recommendation datetime
+                recommended_start = existing_end.strftime("%Y-%m-%d %H:%M:%S")
+                
+                return {
+                    'message': 'Time conflict detected',
+                    'data': {
+                        'conflict': True,
+                        'conflicting_schedule': {
+                            'timeStart': schedule['timeStart'],
+                            'timeEnd': schedule['timeEnd']
+                        },
+                        'recommendation': f'Scheduler have setted up from {existing_start.strftime("%Y-%m-%d %H:%M:%S")} to {existing_end.strftime("%Y-%m-%d %H:%M:%S")}'
+                    }
+                }, 409
+            
+            
+            if (start_datetime >= existing_start and end_datetime >= existing_end):
+                # Format recommendation datetime
+                recommended_start = existing_end.strftime("%Y-%m-%d %H:%M:%S")
+                
+                return {
+                    'message': 'Time conflict detected',
+                    'data': {
+                        'conflict': True,
+                        'conflicting_schedule': {
+                            'timeStart': schedule['timeStart'],
+                            'timeEnd': schedule['timeEnd']
+                        },
+                        'recommendation': f'You should schedule from {existing_end.strftime("%Y-%m-%d %H:%M:%S")} to {end_datetime.strftime("%Y-%m-%d %H:%M:%S")}'
+                    }
+                }, 409
+            
+            if (start_datetime <= existing_start and end_datetime <= existing_end):
+                # Format recommendation datetime
+                recommended_start = existing_end.strftime("%Y-%m-%d %H:%M:%S")
+                
+                return {
+                    'message': 'Time conflict detected',
+                    'data': {
+                        'conflict': True,
+                        'conflicting_schedule': {
+                            'timeStart': schedule['timeStart'],
+                            'timeEnd': schedule['timeEnd']
+                        },
+                        'recommendation': f'You should schedule from {start_datetime.strftime("%Y-%m-%d %H:%M:%S")} to {existing_start.strftime("%Y-%m-%d %H:%M:%S")}'
+                    }
+                }, 409
+    
     vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     vietnam_time = datetime.now(vietnam_tz)
 
+    print("Time vietnam: ",vietnam_time)
+    
     data = {
-        'email_user': email_user,
+        'email': email_user,
         'relayName': relayName,
         'timeStart': timeStart,
         'timeEnd': timeEnd,
         'timestamp': vietnam_time,
+        'repeatDaily' : repeatDaily
     }
+    
+    value = collection_setup_scheduler.insert_one(data)
 
-    collection_setup_scheduler.insert_one(data)
-
-    print(data)
-        
+    value_data = f'{0}_{str(value.inserted_id)}_{relayName}_{timeStart}_{timeEnd}_{int(repeatDaily)}'
+    core_iot_url = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/21c4e8a0-f63f-11ef-a887-6d1a184f2bb5/SHARED_SCOPE"
+    core_iot_body = {
+        "scheduler": value_data
+    }
+   
+    token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ2aW5oLm5ndXllbjEyM0BoY211dC5lZHUudm4iLCJ1c2VySWQiOiJjOWY5OGNmMC1lMTQ2LTExZWYtYWQwOS01MTVmNzkwZWQ5ZGYiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImU4MzU5YzgxLWQ2NmEtNDljYi05NjgyLWE3MTg0MDFlOTQ4YyIsImV4cCI6MTc0MjAyMDQzMSwiaXNzIjoiY29yZWlvdC5pbyIsImlhdCI6MTc0MjAxMTQzMSwiZmlyc3ROYW1lIjoiVklOSCIsImxhc3ROYW1lIjoiTkdVWeG7hE4gS0jhuq5DIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJ0ZW5hbnRJZCI6ImM5ZTk4NzYwLWUxNDYtMTFlZi1hZDA5LTUxNWY3OTBlZDlkZiIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.mS-l5RJ-zRfHzJ237nGnnBNidf2KsQqnb0mgJWJtw8voOdkpMlOH3wuQvUtaKIV9qn8BZhr60E_DRrCzaDvp7w"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Authorization": f"Bearer {token}"
+    }
+   
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(core_iot_url, headers=headers, json=core_iot_body)
+            if response.status_code == 401 and "Token has expired" in response.text:
+                login_url = "https://app.coreiot.io/api/auth/login"
+                login_body = {"username": "vinh.nguyen123@hcmut.edu.vn", "password": "Vinhnguyen1$"}
+                login_response = requests.post(login_url, json=login_body)
+                if login_response.status_code == 200:
+                    token = login_response.json().get('token')
+                    headers["X-Authorization"] = f"Bearer {token}"
+                    continue
+            if response.status_code == 200:
+                print(f"Successfully sent command to Core IOT: {response.text}")
+                break
+            else:
+                print(f"Error sending command to Core IOT: {response.status_code}, {response.text}")
+        except Exception as e:
+            print(f"Exception when calling Core IOT API: {str(e)}")
+        if attempt < max_retries - 1:
+            time.sleep(1)
+    
+    print(value_data)
+    
     return {
         'message': 'Create scheduler successful',
         'data': {
-            'email_user': email_user,
+            'email': email_user,
             'relayName': relayName,
             'timeStart': timeStart,
             'timeEnd': timeEnd,
+            'repeatDaily': repeatDaily,
             'timestamp': vietnam_time
         }
     }, 200
@@ -168,6 +180,8 @@ def service_create_setup_scheduler(body):
 def service_get_setup_scheduler():
     # Lấy tất cả dữ liệu từ MongoDB
     schedulerList = list(collection_setup_scheduler.find())  # ✅ Convert Cursor thành list
+
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 
     # Kiểm tra nếu không có dữ liệu
     if not schedulerList:  
@@ -179,16 +193,24 @@ def service_get_setup_scheduler():
     # Chuyển đổi dữ liệu thành danh sách dictionary
     scheduler_data_list = [
         {
-            "id": str(scheduler["_id"]),  # ✅ Chuyển ObjectId thành string
+            "id": str(scheduler["_id"]),
             "relayName": scheduler["relayName"],
             "timeStart": scheduler["timeStart"],
             "timeEnd": scheduler["timeEnd"],
-            "timestamp": scheduler["timestamp"].strftime("%Y-%m-%dT%H:%M:%S") 
-                if isinstance(scheduler["timestamp"], datetime) else scheduler["timestamp"],
+            "timestamp": (
+                # Nếu timestamp là datetime object
+                (
+                    # Nếu timestamp đã có timezone info
+                    scheduler["timestamp"].astimezone(vietnam_tz) if scheduler["timestamp"].tzinfo
+                    # Nếu timestamp không có timezone info, giả định là UTC
+                    else pytz.UTC.localize(scheduler["timestamp"]).astimezone(vietnam_tz)
+                ).strftime("%Y-%m-%dT%H:%M:%S")
+                if isinstance(scheduler["timestamp"], datetime)
+                else scheduler["timestamp"]
+            ),
         }
         for scheduler in schedulerList
     ]
-
     print(scheduler_data_list)
 
     return {
@@ -206,6 +228,8 @@ def service_get_setup_scheduler_ByID(body):
 
     scheduler = collection_setup_scheduler.find_one({'_id': object_id})  # ✅ Convert Cursor thành list
 
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
     # Kiểm tra nếu không có dữ liệu
     if not scheduler:  
         return {
@@ -213,16 +237,24 @@ def service_get_setup_scheduler_ByID(body):
             'errCode': 1
         }, 400
     
-    print(scheduler)
+    if scheduler["timestamp"].tzinfo is None:
+        # Assume MongoDB timestamp is in UTC
+        utc_time = scheduler["timestamp"].replace(tzinfo=pytz.UTC)
+    else:
+        utc_time = scheduler["timestamp"]
+
+    # Convert to Vietnam time
+    vietnam_time = utc_time.astimezone(vietnam_tz)
+    print(vietnam_time)
 
     return {
         'message': 'Get scheduler By ID successful',
         'data': {
-            'email_user': scheduler["email_user"],
+            'email': scheduler["email"],
             'relayName': scheduler["relayName"],
             'timeStart': scheduler["timeStart"],
             'timeEnd': scheduler["timeEnd"],
-            'timestamp': scheduler["timestamp"].strftime("%Y-%m-%dT%H:%M:%S") 
+            'timestamp': vietnam_time.strftime("%Y-%m-%dT%H:%M:%S") 
                 if isinstance(scheduler["timestamp"], datetime) else scheduler["timestamp"]
         }
     }, 200
@@ -278,6 +310,8 @@ def service_update_setup_scheduler(body):
     # Lấy dữ liệu sau khi update để trả về
     updated_scheduler = collection_setup_scheduler.find_one({"_id": object_id})
 
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
     return {
         'message': 'Update scheduler successful',
         'data': {
@@ -285,7 +319,7 @@ def service_update_setup_scheduler(body):
                 'relayName': updated_scheduler.get("relayName"),
                 'timeStart': updated_scheduler.get("timeStart"),
                 'timeEnd': updated_scheduler.get("timeEnd"),
-                'timestamp': updated_scheduler["timestamp"].strftime("%Y-%m-%dT%H:%M:%S") 
+                'timestamp': updated_scheduler["timestamp"].astimezone(vietnam_tz).strftime("%Y-%m-%dT%H:%M:%S") 
                     if isinstance(updated_scheduler["timestamp"], datetime) else updated_scheduler["timestamp"]
             }
         }, 200

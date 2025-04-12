@@ -1,1 +1,1 @@
-nutnhan = ["nutnhan_1", "nutnhan_2","nutnhan_3", "nutnhan_4"]
+nutnhan = ["nutnhan1", "nutnhan2","nutnhan3", "nutnhan4"]

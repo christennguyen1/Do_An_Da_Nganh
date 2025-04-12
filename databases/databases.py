@@ -28,6 +28,7 @@ db = client["db_da_nganh"]
 fs = gridfs.GridFS(db)
 
 collection_sensor = db["sensors"]
+collection_sensor_data = db["sensors_data"]
 collection_user = db["users"]
 collection_relay = db["relay"]
 collection_setup_temperature = db["setup_temperature"]
@@ -37,37 +38,37 @@ collection_notification = db["notification"]
 collection_setup_scheduler = db["scheduler"]
 
 #Adafruit
-ADA_USERNAME = os.getenv("AIO_USERNAME_ADAFRUIT")
-ADA_KEY = os.getenv("AIO_KEY_ADAFRUIT_1")
-AIO_FEED_ID = ["nutnhan-fan", "nutnhan-door", "nutnhan-light", "nutnhan-pump", "va-tem", "va-lux", "va-pir"]
+# ADA_USERNAME = os.getenv("AIO_USERNAME_ADAFRUIT")
+# ADA_KEY = os.getenv("AIO_KEY_ADAFRUIT_1")
+# AIO_FEED_ID = ["nutnhan-fan", "nutnhan-door", "nutnhan-light", "nutnhan-pump", "va-tem", "va-lux", "va-pir"]
 
-print(ADA_KEY)
+# print(ADA_KEY)
 
-def connected (client) :
-    print ("Ket noi thanh cong...")
-    for feed in AIO_FEED_ID :
-        client.subscribe(feed)
+# def connected (client) :
+#     print ("Ket noi thanh cong...")
+#     for feed in AIO_FEED_ID :
+#         client.subscribe(feed)
 
 
-def subscribe ( client , userdata , mid , granted_qos ) :
-    print ("Subcribe thanh cong...")
+# def subscribe ( client , userdata , mid , granted_qos ) :
+#     print ("Subcribe thanh cong...")
 
-def disconnected ( client ) :
-    print ("Ngat ket noi...")
-    sys.exit (1)
+# def disconnected ( client ) :
+#     print ("Ngat ket noi...")
+#     sys.exit (1)
     
-def message ( client , feed_id , payload ):
-    print ("Nhan du lieu : " + feed_id + " - " + payload )
+# def message ( client , feed_id , payload ):
+#     print ("Nhan du lieu : " + feed_id + " - " + payload )
 
 
-client = MQTTClient ( ADA_USERNAME , ADA_KEY )
-client.on_connect = connected
-client.on_disconnect = disconnected
-client.on_message = message
-client.on_subscribe = subscribe
-client.connect ()
-client.loop_background ()
+# client = MQTTClient ( ADA_USERNAME , ADA_KEY )
+# client.on_connect = connected
+# client.on_disconnect = disconnected
+# client.on_message = message
+# client.on_subscribe = subscribe
+# client.connect ()
+# client.loop_background ()
 
 
-def publish_to_adafruit(feed, value):
-    client.publish(feed, value)
+# def publish_to_adafruit(feed, value):
+#     client.publish(feed, value)

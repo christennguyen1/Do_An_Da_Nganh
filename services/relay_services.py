@@ -1,13 +1,7 @@
 from databases.databases import *
-from datetime import datetime
 from constant.constant import nutnhan
-import pytz
 from schemas import RelayData
 from pymongo  import DESCENDING
-
-
-
-
 import requests
 import pytz
 from datetime import datetime
@@ -30,6 +24,7 @@ def service_update_relay(body):
     # Dữ liệu cập nhật không phụ thuộc email_user
     data = {
         'relayName': relay_name,
+        'email_user': email_user,
         'status': status_relay,
         'timestamp': vietnam_time,
         'updated_by': email_user  # Lưu email_user như thông tin phụ
@@ -54,10 +49,11 @@ def service_update_relay(body):
     #     collection_relay.update_one(query, new_values)
    
     # Gửi lệnh đến Core IOT
-    relay_number = "".join(char for char in relay_name if char.isdigit()) or "1"
+    relay_number = relay_name.split("nutnhan")
+    print(relay_number)
     core_iot_url = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/21c4e8a0-f63f-11ef-a887-6d1a184f2bb5/SHARED_SCOPE"
     core_iot_body = {
-        "method": f"setDataRelay{relay_number}",
+        "method": f"setDataRelay{relay_number[1]}",
         "value": status_relay == "ON"
     }
    
@@ -102,37 +98,53 @@ def service_update_relay(body):
 def service_get_relay(body):
     data = body
     relay_name = data.get('relayName')
-
-
+    
     if relay_name not in nutnhan:
         return {'message': 'Relay not in server', 'errCode': 1}, 400
-   
-    relay = collection_relay.find_one({'relayName': relay_name})
-   
-    if relay is None:
+    
+    # Trực tiếp tìm bản ghi có thời gian lớn nhất
+    latest_relay = collection_relay.find(
+        {'relayName': relay_name}
+    ).sort('timestamp', -1).limit(1)
+    
+    latest_relay_doc = next(latest_relay, None)
+    
+    if latest_relay_doc is None:
         return {'message': 'Relay not in system', 'errCode': 1}, 400
-       
+    
+    # Loại bỏ trường _id (nếu không muốn trả về)
+    if '_id' in latest_relay_doc:
+        latest_relay_doc.pop('_id')
+    
     return {
         'message': 'Get Relay successful',
-        'data': {
-            'relayName': relay["relayName"],
-            'status': relay["status"]
-        }
+        'data': latest_relay_doc
     }, 200
 
 
 def service_getAllStatus_relay(body):
     relay_names = ['nutnhan_1', 'nutnhan_2', 'nutnhan_3', 'nutnhan_4']
     latest_relay_status = {}
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
     for relay_name in relay_names:
         relay = collection_relay.find_one(
             {'relayName': relay_name},
             sort=[('timestamp', DESCENDING)]
         )
+        if relay["timestamp"].tzinfo is None:
+            # Assume MongoDB timestamp is in UTC
+            utc_time = relay["timestamp"].replace(tzinfo=pytz.UTC)
+        else:
+            utc_time = relay["timestamp"]
+
+        # Convert to Vietnam time
+        vietnam_time = utc_time.astimezone(vietnam_tz)
+        print(vietnam_time)
         if relay:
             latest_relay_status[relay_name] = {
                 'status': relay['status'],
-                'timestamp': relay['timestamp'],
+                'timestamp': vietnam_time.strftime("%Y-%m-%dT%H:%M:%S") 
+                if isinstance(relay["timestamp"], datetime) else relay["timestamp"],
                 'updated_by': relay.get('updated_by', 'Unknown')
             }
         else:
@@ -145,6 +157,7 @@ def service_getAllStatus_relay(body):
         'message': 'Get Relay successful',
         'data': latest_relay_status
     }, 200
+
 def service_delete_relay(body):
     data = body
     relay_name = data.get('relayName')
@@ -181,7 +194,7 @@ def service_create_relay(body):
         'relayName': relay_name,
         'status': status_relay,
         'timestamp': vietnam_time,
-        'updated_by': email_user
+        'email_user': email_user
     }
 
 
@@ -200,7 +213,7 @@ def service_create_relay(body):
             'relayName': relay_name,
             'status': status_relay,
             'timestamp': vietnam_time,
-            'updated_by': email_user
+            'email_user': email_user
         }
     }, 200
 
@@ -230,13 +243,25 @@ def service_get_relay_history(body):
                 'message': 'Relay not in system',
                 'errCode': 1
             }, 400
+    
+    vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
    
     relay_data_list = [
         RelayData(
             relayName=relay["relayName"],
             email_user=relay["email_user"],
             status=relay["status"],
-            timestamp=relay["timestamp"].strftime("%Y-%m-%dT%H:%M:%S") if isinstance(relay["timestamp"], datetime) else relay["timestamp"],
+            timestamp=(
+                # Nếu timestamp là datetime object
+                (
+                    # Nếu timestamp đã có timezone info
+                    relay["timestamp"].astimezone(vietnam_tz) if relay["timestamp"].tzinfo
+                    # Nếu timestamp không có timezone info, giả định là UTC
+                    else pytz.UTC.localize(relay["timestamp"]).astimezone(vietnam_tz)
+                ).strftime("%Y-%m-%dT%H:%M:%S")
+                if isinstance(relay["timestamp"], datetime)
+                else relay["timestamp"]
+            ),
         )
         for relay in relayList
     ]

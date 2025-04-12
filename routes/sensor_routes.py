@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
-from controller.sensors_controller import controller_get_data, controller_get_data_month, controller_get_data_week, controller_get_data_day
+from controller.sensors_controller import controller_get_data, controller_get_data_month, controller_get_data_week, controller_get_data_day, controller_post_data
 
 router = APIRouter()
 
@@ -11,6 +11,11 @@ router = APIRouter()
 # @router.get("/all/{user}")
 # async def get_sensor_data(user: str, token: str = Depends(oauth2_scheme)):
 #     return controller_get_data(user, token)
+
+@router.post("/create")
+async def post_sensor_data(request: Request):
+    body = await request.json()
+    return controller_post_data(body)
 
 @router.get("/latest/{user}")
 async def get_sensor_data(user: str):
