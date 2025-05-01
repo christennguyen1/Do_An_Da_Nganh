@@ -4,12 +4,12 @@ from fastapi.responses import JSONResponse
 
 
 # def controller_get_data(user: str, token: str):
-def controller_post_data(body):
+async def controller_post_data(body):
 # Xác thực token
     try:
         # Truy vấn tất cả các document trong collection
         # verify_jwt_token(token)
-        data, status = service_post_all_data(body)
+        data, status = await service_post_all_data(body)
         response = {
             "message": data.get('message'),
             "data": data.get('data'),

@@ -36,16 +36,13 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         while True:
             data = await websocket.receive_text()  # Lắng nghe dữ liệu nếu cần
             print(f"Received: {data} from User {user_id}")
-
-
+              
             # Lưu vào MongoDB
             notification = Notification(user_id=user_id, message=data)
             collection_notification.insert_one(notification.to_dict())  # MongoDB
-
-
+      
     except WebSocketDisconnect:
         await remove_connection(user_id)  # Xóa kết nối khi bị ngắt
-
 
 # Include routers
 app.include_router(user_routes.router, tags=['Users'], prefix='/api/users')

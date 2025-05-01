@@ -13,9 +13,9 @@ router = APIRouter()
 #     return controller_get_data(user, token)
 
 @router.post("/create")
-async def post_sensor_data(request: Request):
+async def create_sensor_data(request: Request):
     body = await request.json()
-    return controller_post_data(body)
+    return await controller_post_data(body)
 
 @router.get("/latest/{user}")
 async def get_sensor_data(user: str):

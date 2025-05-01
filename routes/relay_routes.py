@@ -98,3 +98,15 @@ async def delete_relay_data(request: Request):
 
 
 
+# POST http://localhost:8000/api/ai-simulator/monitor/single
+# Content-Type: application/json
+
+# {
+#   "user_id": 1,
+#   "device": "Cảm biến nhiệt độ A1",
+#   "description": "Nhiệt độ cao bất thường",
+#   "severity": "Cao", 
+#   "issue": "Nhiệt độ quá cao",
+#   "recommendation": "Tăng cường hệ thống làm mát",
+#   "message": "Cảnh báo: Phát hiện nhiệt độ cao bất thường tại khu vực trồng lúa"
+# }

@@ -1,5 +1,5 @@
 from fastapi import APIRouter,  Depends, Request
-from controller.setup_controller import controller_create_setup_scheduler, controller_get_setup_scheduler, controller_get_setup_scheduler_ByID, controller_update_scheduler, controller_delete_scheduler
+from controller.setup_controller import  controller_get_setup_scheduler, controller_get_setup_scheduler_ByID, controller_update_scheduler, controller_delete_scheduler, controller_put_setup_threshold,controller_delete_setup_scheduler, controller_get_setup_scheduler
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -8,10 +8,19 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
 
 
-@router.post("/scheduler")
-async def create_setup_scheduler(request: Request):
+
+@router.put("/threshold")
+async def create_setup_threshold(request: Request):
     body = await request.json()
-    return controller_create_setup_scheduler(body)
+    return controller_put_setup_threshold(body)
+
+@router.delete("/threshold")
+async def delete_setup_threshold():
+    return controller_delete_setup_scheduler()
+
+@router.get("/threshold")
+async def get_setup_threshold():
+    return controller_get_setup_scheduler()
 
 
 @router.get("/scheduler")

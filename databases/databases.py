@@ -2,7 +2,6 @@ from pymongo import MongoClient
 import gridfs
 import requests
 import sys
-from Adafruit_IO import MQTTClient
 import os
 from dotenv import load_dotenv
 
@@ -36,6 +35,7 @@ collection_setup_pir = db["setup_pir"]
 collection_setup_light = db["setup_light"]
 collection_notification = db["notification"]
 collection_setup_scheduler = db["scheduler"]
+collection_setup_threshold = db["threshold"]
 
 #Adafruit
 # ADA_USERNAME = os.getenv("AIO_USERNAME_ADAFRUIT")

@@ -1,11 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from bson import ObjectId
 from datetime import datetime  # Import datetime để sử dụng
+from typing import Dict, Any, Optional
 
 class SensorData(BaseModel):
     lux: float
     temperature: float
     humidity: float
+    soil: float
     timestamp: str 
 
     class Config:
@@ -30,6 +32,7 @@ class SensorDataMonth(BaseModel):
     lux: float
     temperature: float
     humidity: float
+    soil: float
     month: str  # Thay đổi kiểu dữ liệu thành datetime
     year: int
 
@@ -57,6 +60,7 @@ class SensorDataWeek(BaseModel):
     lux: float
     temperature: float
     humidity: float
+    soil: float
     day: str  # Thay đổi kiểu dữ liệu thành datetime
 
     class Config:
@@ -69,6 +73,7 @@ class SensorDataDay(BaseModel):
     lux: float
     temperature: float
     humidity: float
+    soil: float
     hour: int  # Thay đổi kiểu dữ liệu thành datetime
 
     class Config:
@@ -89,17 +94,52 @@ class UserInfo(BaseModel):
     phoneNumber: str
     address: str
 
-class Notification:
-    def __init__(self, user_id, message, timestamp=None, seen=False):
-        self.user_id = user_id
-        self.message = message
-        self.timestamp = timestamp if timestamp else datetime.utcnow()
-        self.seen = seen
-
-    def to_dict(self):
+class Notification(BaseModel):
+    user_id: int
+    message: str
+    type: str = "info"  # "info", "warning", "alert", "error"
+    data: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=datetime.now)
+    
+    def to_dict(self) -> Dict[str, Any]:
         return {
-            'user_id': self.user_id,
-            'message': self.message,
-            'timestamp': self.timestamp,
-            'seen': self.seen
+            "user_id": self.user_id,
+            "message": self.message,
+            "type": self.type,
+            "data": self.data,
+            "is_read": self.is_read,
+            "created_at": self.created_at
         }
+    
+class Notification(BaseModel):
+    user_id: int
+    message: str
+    type: str = "info"  # "info", "warning", "alert", "error"
+    data: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    is_read: bool = False
+    seen: bool = False  # Giữ lại trường seen để tương thích với API mark_as_seen
+    created_at: datetime = Field(default_factory=datetime.now)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "user_id": self.user_id,
+            "message": self.message,
+            "type": self.type,
+            "data": self.data,
+            "is_read": self.is_read,
+            "seen": self.seen,
+            "created_at": self.created_at
+        }
+        
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Notification":
+        return cls(
+            user_id=data["user_id"],
+            message=data["message"],
+            type=data.get("type", "info"),
+            data=data.get("data", {}),
+            is_read=data.get("is_read", False),
+            seen=data.get("seen", False),
+            created_at=data.get("created_at", datetime.now())
+        )

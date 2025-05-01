@@ -6,6 +6,223 @@ import pytz
 import time
 from bson import ObjectId
 
+import requests
+import time
+
+def service_get_setup_threshold():
+    # Lấy bản ghi đầu tiên từ collection
+    existing_threshold = collection_setup_threshold.find_one()
+
+    # Khởi tạo các giá trị mặc định
+    temperature_threshold = None
+    humidity_threshold = None
+    humidity_soil_threshold = None
+    light_threshold = None
+    object_id = None
+
+    if len(existing_threshold) == 0:
+        return {
+                'message': 'Threshold not found', 
+                'errCode': 1
+            }, 404
+        
+    temperature_threshold = existing_threshold.get('temperature_threshold')
+    humidity_threshold = existing_threshold.get('humidity_threshold')
+    humidity_soil_threshold = existing_threshold.get('humidity_soil_threshold')
+    light_threshold = existing_threshold.get('light_threshold')
+
+    return {
+        'message': 'Create threshold successful',
+        'data': {
+            "temperature_threshold": temperature_threshold,
+            "humidity_threshold": humidity_threshold,
+            "humidity_soil_threshold": humidity_soil_threshold,
+            "light_threshold": light_threshold
+        }
+    }, 200
+
+def service_put_setup_threshold(body):
+    data = body
+    
+    temperature = data.get('temperature_threshold')
+    humidity = data.get('humidity_threshold')
+    humidity_soil = data.get('humidity_soil_threshold')
+    light = data.get('light_threshold')
+    
+    # Lấy bản ghi đầu tiên từ collection
+    existing_threshold = collection_setup_threshold.find_one()
+
+    # Khởi tạo các giá trị mặc định
+    temperature_threshold = None
+    humidity_threshold = None
+    humidity_soil_threshold = None
+    light_threshold = None
+    object_id = None
+
+    if existing_threshold:
+        object_id = existing_threshold.get('_id')
+        temperature_threshold = existing_threshold.get('temperature_threshold')
+        humidity_threshold = existing_threshold.get('humidity_threshold')
+        humidity_soil_threshold = existing_threshold.get('humidity_soil_threshold')
+        light_threshold = existing_threshold.get('light_threshold')
+
+    value = None
+
+    if existing_threshold:
+        value = collection_setup_scheduler.insert_one(data)
+
+    new_values = {"$set": {}}
+
+    if temperature:
+        new_values["$set"]['temperature_threshold'] = temperature
+    else:
+        new_values["$set"]['temperature_threshold'] = temperature_threshold
+
+    if humidity:
+        new_values["$set"]['humidity_threshold'] = humidity
+    else:
+        new_values["$set"]['humidity_threshold'] = humidity_threshold
+
+    if humidity_soil:
+        new_values["$set"]['humidity_soil_threshold'] = humidity_soil
+    else:
+        new_values["$set"]['humidity_soil_threshold'] = humidity_soil_threshold
+
+    if light:
+        new_values["$set"]['light_threshold'] = light
+    else:
+        new_values["$set"]['light_threshold'] = light_threshold
+
+    # Thực hiện update
+    if object_id:
+        collection_setup_scheduler.update_one({"_id": object_id}, new_values)
+    else:
+        # Cập nhật hoặc chèn mới vào collection_setup_threshold
+        value = collection_setup_threshold.update_one(
+            {"_id": object_id} if object_id else {},
+            new_values,
+            upsert=True
+        )
+
+    # Tạm thời bỏ các biến không xác định trong value_data
+    value_data = f'0_{str(object_id or "new")}'  # Không thể dùng relayName, timeStart, timeEnd, repeatDaily
+    print(value_data)
+
+    core_iot_url = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/21c4e8a0-f63f-11ef-a887-6d1a184f2bb5/SHARED_SCOPE"
+    core_iot_body = {
+        "temperature_threshold": new_values["$set"]['temperature_threshold'],
+        "humidity_threshold": new_values["$set"]['humidity_threshold'],
+        "humidity_soil_threshold": new_values["$set"]['humidity_soil_threshold'],
+        "light_threshold": new_values["$set"]['light_threshold']
+    }
+   
+    token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ2aW5oLm5ndXllbjEyM0BoY211dC5lZHUudm4iLCJ1c2VySWQiOiJjOWY5OGNmMC1lMTQ2LTExZWYtYWQwOS01MTVmNzkwZWQ5ZGYiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImU4MzU5YzgxLWQ2NmEtNDljYi05NjgyLWE3MTg0MDFlOTQ4YyIsImV4cCI6MTc0MjAyMDQzMSwiaXNzIjoiY29yZWlvdC5pbyIsImlhdCI6MTc0MjAxMTQzMSwiZmlyc3ROYW1lIjoiVklOSCIsImxhc3ROYW1lIjoiTkdVWeG7hE4gS0jhuq5DIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJ0ZW5hbnRJZCI6ImM5ZTk4NzYwLWUxNDYtMTFlZi1hZDA5LTUxNWY3OTBlZDlkZiIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.mS-l5RJ-zRfHzJ237nGnnBNidf2KsQqnb0mgJWJtw8voOdkpMlOH3wuQvUtaKIV9qn8BZhr60E_DRrCzaDvp7w"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Authorization": f"Bearer {token}"
+    }
+   
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(core_iot_url, headers=headers, json=core_iot_body)
+            if response.status_code == 401 and "Token has expired" in response.text:
+                login_url = "https://app.coreiot.io/api/auth/login"
+                login_body = {"username": "vinh.nguyen123@hcmut.edu.vn", "password": "Vinhnguyen1$"}
+                login_response = requests.post(login_url, json=login_body)
+                if login_response.status_code == 200:
+                    token = login_response.json().get('token')
+                    headers["X-Authorization"] = f"Bearer {token}"
+                    continue
+            if response.status_code == 200:
+                print(f"Successfully sent command to Core IOT: {response.text}")
+                break
+            else:
+                print(f"Error sending command to Core IOT: {response.status_code}, {response.text}")
+        except Exception as e:
+            print(f"Exception when calling Core IOT API: {str(e)}")
+        if attempt < max_retries - 1:
+            time.sleep(1)
+    
+    print(value_data)
+    
+    return {
+        'message': 'Create threshold successful',
+        'data': {
+            "temperature_threshold": new_values["$set"]['temperature_threshold'],
+            "humidity_threshold": new_values["$set"]['humidity_threshold'],
+            "humidity_soil_threshold": new_values["$set"]['humidity_soil_threshold'],
+            "light_threshold": new_values["$set"]['light_threshold']
+        }
+    }, 200
+
+def service_delete_setup_threshold():
+    # Lấy bản ghi đầu tiên từ collection
+    existing_threshold = collection_setup_threshold.find_one()
+
+    if len(existing_threshold) == 0:
+        return {
+                'message': 'Threshold not found', 
+                'errCode': 1
+            }, 404
+    object_id = existing_threshold.get('_id')
+    new_values = {"$set": {}}
+    new_values["$set"]['temperature_threshold'] = 0
+    new_values["$set"]['humidity_threshold'] = 0
+    new_values["$set"]['humidity_soil_threshold'] = 0
+    new_values["$set"]['light_threshold'] = 0
+
+    print
+
+
+    # Thực hiện update
+    collection_setup_threshold.update_one({"_id": object_id}, new_values)
+    
+
+    core_iot_url = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/21c4e8a0-f63f-11ef-a887-6d1a184f2bb5/SHARED_SCOPE"
+    core_iot_body = {
+        "temperature_threshold": 0,
+        "humidity_threshold": 0,
+        "humidity_soil_threshold": 0,
+        "light_threshold": 0
+    }
+   
+    token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ2aW5oLm5ndXllbjEyM0BoY211dC5lZHUudm4iLCJ1c2VySWQiOiJjOWY5OGNmMC1lMTQ2LTExZWYtYWQwOS01MTVmNzkwZWQ5ZGYiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImU4MzU5YzgxLWQ2NmEtNDljYi05NjgyLWE3MTg0MDFlOTQ4YyIsImV4cCI6MTc0MjAyMDQzMSwiaXNzIjoiY29yZWlvdC5pbyIsImlhdCI6MTc0MjAxMTQzMSwiZmlyc3ROYW1lIjoiVklOSCIsImxhc3ROYW1lIjoiTkdVWeG7hE4gS0jhuq5DIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJ0ZW5hbnRJZCI6ImM5ZTk4NzYwLWUxNDYtMTFlZi1hZDA5LTUxNWY3OTBlZDlkZiIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.mS-l5RJ-zRfHzJ237nGnnBNidf2KsQqnb0mgJWJtw8voOdkpMlOH3wuQvUtaKIV9qn8BZhr60E_DRrCzaDvp7w"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Authorization": f"Bearer {token}"
+    }
+   
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(core_iot_url, headers=headers, json=core_iot_body)
+            if response.status_code == 401 and "Token has expired" in response.text:
+                login_url = "https://app.coreiot.io/api/auth/login"
+                login_body = {"username": "vinh.nguyen123@hcmut.edu.vn", "password": "Vinhnguyen1$"}
+                login_response = requests.post(login_url, json=login_body)
+                if login_response.status_code == 200:
+                    token = login_response.json().get('token')
+                    headers["X-Authorization"] = f"Bearer {token}"
+                    continue
+            if response.status_code == 200:
+                print(f"Successfully sent command to Core IOT: {response.text}")
+                break
+            else:
+                print(f"Error sending command to Core IOT: {response.status_code}, {response.text}")
+        except Exception as e:
+            print(f"Exception when calling Core IOT API: {str(e)}")
+        if attempt < max_retries - 1:
+            time.sleep(1)
+
+    
+    return {
+        'message': 'Delete threshold successful',
+        'data': {}
+    }, 200
+
+
+
 
 def service_create_setup_scheduler(body):
     data = body
@@ -129,6 +346,7 @@ def service_create_setup_scheduler(body):
     value = collection_setup_scheduler.insert_one(data)
 
     value_data = f'{0}_{str(value.inserted_id)}_{relayName}_{timeStart}_{timeEnd}_{int(repeatDaily)}'
+    print(value_data)
     core_iot_url = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/21c4e8a0-f63f-11ef-a887-6d1a184f2bb5/SHARED_SCOPE"
     core_iot_body = {
         "scheduler": value_data

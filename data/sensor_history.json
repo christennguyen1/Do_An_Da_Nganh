@@ -1,0 +1,271 @@
+[
+  {
+    "timestamp": "2025-04-26T15:36:12",
+    "is_valid": true,
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0
+  },
+  {
+    "timestamp": "2025-04-26T15:36:34",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 2,
+      "last_time": "2025-04-26T15:36:34"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:36:42",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 4,
+      "last_time": "2025-04-26T15:36:42"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:36:45",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 6,
+      "last_time": "2025-04-26T15:36:45"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:38:31",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 8,
+      "last_time": "2025-04-26T15:38:31"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:38:34",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 10,
+      "last_time": "2025-04-26T15:38:34"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:38:35",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 12,
+      "last_time": "2025-04-26T15:38:35"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:40:16",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 2,
+      "last_time": "2025-04-26T15:40:16"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:40:17",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 4,
+      "last_time": "2025-04-26T15:40:17"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-04-26T15:40:18",
+    "is_valid": false,
+    "event": "watering",
+    "watering_info": {
+      "detected": true,
+      "consecutive_count": 6,
+      "last_time": "2025-04-26T15:40:18"
+    },
+    "temperature": 30.0,
+    "humidity": 30.0,
+    "lux": 20.0,
+    "soil": -1.0,
+    "errors_detail": {
+      "count": 1,
+      "sensors": [
+        "soil"
+      ],
+      "values": {
+        "soil": 1000.0
+      },
+      "interpolated": {
+        "soil": -1.0
+      },
+      "critical": [
+        "soil"
+      ]
+    }
+  }
+]
