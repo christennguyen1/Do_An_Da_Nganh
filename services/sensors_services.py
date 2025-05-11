@@ -97,216 +97,161 @@ def service_get_all_data(user: str):
 
 
 def service_get_all_data_month(user: str):
-    # Sử dụng múi giờ Việt Nam (UTC+7)
-    vietnam_tz = timezone(timedelta(hours=7))
-    
-    # Tính thời gian cho khoảng 12 tháng trước đến hiện tại theo giờ Việt Nam
-    end_date = datetime.now(vietnam_tz)
-    start_date = end_date - relativedelta(months=12)
-    
-    # Chuyển sang chuỗi ISO format để so sánh với dữ liệu trong MongoDB
-    start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S")
-    end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S")
-    
-    # Log thông tin debug
-    print(f"Fetching data from {start_date_str} to {end_date_str} for user: {user}")
-    
-    # Truy vấn dữ liệu trong khoảng thời gian
-    query = {
+    # Tính thời gian bắt đầu và kết thúc cho khoảng thời gian 1 tuần
+    # Go back 12 months from the current date
+    start_date = (datetime.now(timezone.utc) - relativedelta(months=12)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Lấy thời gian hiện tại
+    end_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Debug thông tin thời gian
+    print(f"Fetching data from {start_date} to {end_date} for user: {user}")
+
+    sensors = collection_sensor_data.find({
         "timestamp": {
-            "$gte": start_date_str,
-            "$lte": end_date_str
-        }
-    }
+                "$gte": start_date,
+                "$lte": end_date
+            }  # Lọc dữ liệu có timestamp >= one_week_ago
+    })
     
-    # Thêm điều kiện user nếu cần
-    if user:
-        query["user"] = user
-    
-    # Kiểm tra số lượng documents trước khi truy vấn đầy đủ
-    count = collection_sensor_data.count_documents(query)
-    
-    if count == 0:
+    # Nếu không có dữ liệu cảm biến nào cho người dùng
+    if collection_sensor_data.count_documents({"timestamp": {
+        "$gte": start_date,
+        "$lte": end_date
+    }}) == 0:
         return {
-            'message': 'No data available for the last 12 months',
+            'message': 'Data or user do not have data in the last week',
             'data': []
         }, 200
     
-    # Truy vấn dữ liệu
-    sensors_data = list(collection_sensor_data.find(query))
-    
-    # Chuyển đổi sang DataFrame
-    df = pd.DataFrame(sensors_data)
-    
-    # Chuyển đổi timestamp từ chuỗi sang datetime và chỉ định múi giờ Việt Nam
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    
-    # Đảm bảo timestamp được xử lý theo múi giờ Việt Nam
-    if df["timestamp"].dt.tz is None:
-        df["timestamp"] = df["timestamp"].dt.tz_localize(vietnam_tz)
-    else:
-        df["timestamp"] = df["timestamp"].dt.tz_convert(vietnam_tz)
-    
-    # Tạo cột year_month từ timestamp
+    df = pd.DataFrame(sensors)
+
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="%Y-%m-%dT%H:%M:%S")
     df["year_month"] = df["timestamp"].dt.to_period("M")
-    
-    # Đảm bảo các cột dữ liệu cảm biến là số
-    numeric_columns = ["lux", "temperature", "humidity", "soil"]
-    for col in numeric_columns:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-        else:
-            df[col] = None
-    
-    # Nhóm theo tháng và tính trung bình
-    monthly_avg = df.groupby("year_month")[numeric_columns].mean().reset_index()
-    
-    # Thêm cột month_name và year
+    df["lux"] = pd.to_numeric(df["lux"], errors="coerce")
+    df["temperature"] = pd.to_numeric(df["temperature"], errors="coerce")
+    df["humidity_soil"] = pd.to_numeric(df["humidity_soil"], errors="coerce")
+
+    df["N_soil"] = pd.to_numeric(df["N_soil"], errors="coerce")
+    df["P_soil"] = pd.to_numeric(df["P_soil"], errors="coerce")
+    df["K_soil"] = pd.to_numeric(df["K_soil"], errors="coerce")
+
+    monthly_avg = df.groupby("year_month")[["lux", "temperature", "humidity_soil", "N_soil","P_soil","K_soil"]].mean().reset_index()
+
     monthly_avg['month_name'] = monthly_avg['year_month'].dt.strftime('%b')
     monthly_avg['year'] = monthly_avg['year_month'].dt.year
-    
-    # Tạo danh sách dữ liệu theo tháng
-    sensor_data_list = []
-    
-    for _, row in monthly_avg.iterrows():
-        # Xử lý nếu có cột soil thiếu
-        soil_value = row.get("soil", None)
-        
-        sensor_data_list.append(
-            SensorDataMonth(
-                lux=row["lux"],
-                temperature=row["temperature"],
-                humidity=row["humidity"],
-                soil=soil_value,
-                month=row["month_name"],
-                year=row["year"]
-            )
+
+    monthly_avg = monthly_avg.reset_index()
+
+    print(monthly_avg)
+
+    sensor_data_list = [
+        SensorDataMonth(
+            lux=row["lux"],
+            temperature=row["temperature"],
+            humidity_soil=row["humidity_soil"],
+            N_soil=row["N_soil"],
+            P_soil=row["P_soil"],
+            K_soil=row["K_soil"],
+            month=row["month_name"],
+            year = row["year"]
         )
-    
-    # Debug: in kết quả
-    print(f"Found data for {len(sensor_data_list)} months")
-    
-    # Chuyển đổi thành JSON để trả về
+        for index, row in monthly_avg.iterrows()
+    ]
+
+    print(sensor_data_list)
+
+    # Convert data to JSON response
     response_data = {
         "total_data": len(sensor_data_list),
-        "sensor_data": jsonable_encoder(sensor_data_list)
+        "sensor_data": jsonable_encoder(sensor_data_list)  # Converts objects to JSON-compatible format
     }
-    
+
+    # Return JSON response with status code
     return {
-        'message': 'Monthly average data retrieved successfully',
+        'message': 'Get all data successfully',
         'data': response_data
     }, 200
 
 
 def service_get_all_data_week(user: str):
-    # Sử dụng múi giờ Việt Nam (UTC+7)
-    vietnam_tz = timezone(timedelta(hours=7))
-    
-    # Tính thời gian cho khoảng 1 tuần trước đến hiện tại theo giờ Việt Nam
-    end_date = datetime.now(vietnam_tz)
-    start_date = end_date - relativedelta(weeks=1)
-    
-    # Chuyển sang chuỗi ISO format để so sánh với dữ liệu trong MongoDB
-    start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S")
-    end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S")
-    
-    # Log thông tin debug
-    print(f"Fetching data from {start_date_str} to {end_date_str} for user: {user}")
-    
-    # Truy vấn dữ liệu trong khoảng thời gian
-    query = {
+    # Tính thời gian bắt đầu và kết thúc cho khoảng thời gian 1 tuần
+    # Go back 12 months from the current date
+    start_date = (datetime.now(timezone.utc) - relativedelta(weeks=1)).strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Lấy thời gian hiện tại
+    end_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Debug thông tin thời gian
+    print(f"Fetching data from {start_date} to {end_date} for user: {user}")
+
+    sensors = collection_sensor_data.find({
         "timestamp": {
-            "$gte": start_date_str,
-            "$lte": end_date_str
-        }
-    }
+                "$gte": start_date,
+                "$lte": end_date
+            }  # Lọc dữ liệu có timestamp >= one_week_ago
+    })
     
-    # Thêm điều kiện user nếu cần
-    if user:
-        query["user"] = user
-    
-    # Kiểm tra số lượng documents trước khi truy vấn đầy đủ
-    count = collection_sensor_data.count_documents(query)
-    
-    if count == 0:
+    # Nếu không có dữ liệu cảm biến nào cho người dùng
+    if collection_sensor_data.count_documents({"timestamp": {
+        "$gte": start_date,
+        "$lte": end_date
+    }}) == 0:
         return {
-            'message': 'No data available for the last week',
+            'message': 'Data or user do not have data in the last week',
             'data': []
         }, 200
     
-    # Truy vấn dữ liệu
-    sensors_data = list(collection_sensor_data.find(query))
-    
-    # Chuyển đổi sang DataFrame
-    df = pd.DataFrame(sensors_data)
-    
-    # Chuyển đổi timestamp từ chuỗi sang datetime và chỉ định múi giờ Việt Nam
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    
-    # Đảm bảo timestamp được xử lý theo múi giờ Việt Nam
-    if df["timestamp"].dt.tz is None:
-        df["timestamp"] = df["timestamp"].dt.tz_localize(vietnam_tz)
-    else:
-        df["timestamp"] = df["timestamp"].dt.tz_convert(vietnam_tz)
-    
-    # Lấy tên thứ trong tuần (tiếng Việt)
-    weekday_map = {
-        0: "Thứ Hai",
-        1: "Thứ Ba",
-        2: "Thứ Tư", 
-        3: "Thứ Năm",
-        4: "Thứ Sáu",
-        5: "Thứ Bảy",
-        6: "Chủ Nhật"
-    }
-    df["weekday_num"] = df["timestamp"].dt.weekday
-    df["weekday"] = df["weekday_num"].map(weekday_map)
-    
+    df = pd.DataFrame(sensors)
+
+    # Chuyển timestamp về dạng datetime
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="%Y-%m-%dT%H:%M:%S")
+
+    # Lấy tên thứ trong tuần (Monday, Tuesday, ...)
+    df["weekday"] = df["timestamp"].dt.strftime("%A")  
+
     # Lấy ngày dạng YYYY-MM-DD
-    df["date"] = df["timestamp"].dt.date
-    
-    # Đảm bảo các cột dữ liệu cảm biến là số
-    numeric_columns = ["lux", "temperature", "humidity", "soil"]
-    for col in numeric_columns:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-        else:
-            df[col] = None
-    
-    # Nhóm theo ngày và thứ, sau đó tính trung bình
-    daily_avg = df.groupby(["date", "weekday", "weekday_num"])[numeric_columns].mean().reset_index()
-    
-    # Sắp xếp theo thứ trong tuần để hiển thị đúng thứ tự
-    daily_avg = daily_avg.sort_values("weekday_num")
-    
-    # Tạo danh sách dữ liệu theo ngày trong tuần
-    sensor_data_list = []
-    
-    for _, row in daily_avg.iterrows():
-        # Xử lý nếu có cột soil thiếu
-        soil_value = row.get("soil", None)
-        
-        sensor_data_list.append(
-            SensorDataWeek(
-                lux=row["lux"],
-                temperature=row["temperature"],
-                humidity=row["humidity"],
-                soil=soil_value,
-                day=row["weekday"]
-            )
+    df["date"] = df["timestamp"].dt.date  
+
+    # Chuyển đổi dữ liệu về dạng số
+    df["lux"] = pd.to_numeric(df["lux"], errors="coerce")
+    df["temperature"] = pd.to_numeric(df["temperature"], errors="coerce")
+    df["humidity_soil"] = pd.to_numeric(df["humidity_soil"], errors="coerce")
+
+    df["N_soil"] = pd.to_numeric(df["N_soil"], errors="coerce")
+    df["P_soil"] = pd.to_numeric(df["P_soil"], errors="coerce")
+    df["K_soil"] = pd.to_numeric(df["K_soil"], errors="coerce")
+
+    # Nhóm theo ngày (date) và thứ (weekday), sau đó tính trung bình
+    daily_avg = df.groupby(["date", "weekday"])[["lux", "temperature", "humidity_soil", "N_soil", "P_soil" , "K_soil"]].mean().reset_index()
+
+    # In kết quả
+    print(daily_avg)
+
+    sensor_data_list = [
+        SensorDataWeek(
+            lux=row["lux"],
+            temperature=row["temperature"],
+            humidity_soil=row["humidity_soil"],
+            N_soil=row["N_soil"],
+            P_soil=row["P_soil"],
+            K_soil=row["K_soil"],
+            day=row["weekday"]
         )
-    
-    # Debug: in kết quả
-    print(f"Found data for {len(sensor_data_list)} days")
-    
-    # Chuyển đổi thành JSON để trả về
+        for index, row in daily_avg.iterrows()
+    ]
+
+    print(sensor_data_list)
+
+    # Convert data to JSON response
     response_data = {
         "total_data": len(sensor_data_list),
-        "sensor_data": jsonable_encoder(sensor_data_list)
+        "sensor_data": jsonable_encoder(sensor_data_list)  # Converts objects to JSON-compatible format
     }
-    
+
+    # Return JSON response with status code
     return {
-        'message': 'Weekly average data retrieved successfully',
+        'message': 'Get all data successfully',
         'data': response_data
     }, 200
 

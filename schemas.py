@@ -31,8 +31,10 @@ class RelayData(BaseModel):
 class SensorDataMonth(BaseModel):
     lux: float
     temperature: float
-    humidity: float
-    soil: float
+    humidity_soil: float
+    N_soil: float
+    P_soil: float
+    K_soil: float
     month: str  # Thay đổi kiểu dữ liệu thành datetime
     year: int
 
@@ -59,8 +61,10 @@ class SchedulerData(BaseModel):
 class SensorDataWeek(BaseModel):
     lux: float
     temperature: float
-    humidity: float
-    soil: float
+    humidity_soil: float
+    N_soil: float
+    P_soil: float
+    K_soil: float
     day: str  # Thay đổi kiểu dữ liệu thành datetime
 
     class Config:
